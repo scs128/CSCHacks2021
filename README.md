@@ -11,12 +11,15 @@ This repo is an example of a team project repository that meets all of [the repo
 
 ## Team Information
 Scott Sullivan
-* Pitt IS, 2023
+* Pitt Information Science, 2023
 * scs128@pitt.edu
 * https://www.linkedin.com/in/scottsullivan01/
 
-Ming Wang
-* Pitt CS, 2022
-* zhw78@pitt.edu
-* He smells
-* https://www.linkedin.com/in/zhengmingwang/
+Andrew Fiore
+* Pitt Health Information Management, 2023
+* apf19@pitt.edu
+* https://www.linkedin.com/in/andrew-fiore-b24182204/
+
+Matt Shiber
+* Pitt Statistics, 2023
+* mds168@pitt.edu
