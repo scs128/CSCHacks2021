@@ -9,6 +9,12 @@ This repo is an example of a team project repository that meets all of [the repo
 * Doing this will require learning x, y, z.
 * We anticipate the following challenges: x, y, z.
 
+## Project List
+* Musician Connect App, using Songlink API
+* Text to Speech App, using libraries
+* Roguelike in Rust/Python
+* Search engine in Python
+
 ## Team Information
 Scott Sullivan
 * Pitt Information Science, 2023
