@@ -1,8 +1,8 @@
 import pygame
 
 # must be an even multiple of 32
-display_width = 320
-display_height = 320
+display_width = 640
+display_height = 640
 
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -26,7 +26,12 @@ clock = pygame.time.Clock() #pygame clock based off frames apparently
 def player(x, y):
     gameDisplay.blit(pygame.image.load('./Art/warrior.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
 
-def walls():
+def room():
+    if display_width == 320 and display_height == 320:
+        gameDisplay.blit(pygame.image.load('./Art/floortiles_320x320.png'), (0, 0))
+    elif display_width == 640 and display_height == 640:
+        gameDisplay.blit(pygame.image.load('./Art/floortiles_640x640.png'), (0, 0))
+    
     # create top row of walls
     gameDisplay.blit(pygame.image.load('./Art/wall_topleft.png'), (0, 0))
     gameDisplay.blit(pygame.image.load('./Art/wall_top_ns.png'), (0, tile_size))
@@ -40,8 +45,8 @@ def walls():
     for y in range(2, int(display_height/32 - 2)):
         gameDisplay.blit(pygame.image.load('./Art/wall_top_ns.png'), (0, tile_size*y))
         gameDisplay.blit(pygame.image.load('./Art/wall_top_ns.png'), (display_width-tile_size, tile_size*y))
-        for x in range(1, int(display_width/32 - 1)):
-            gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (tile_size*x, tile_size*y))
+        #for x in range(1, int(display_width/32 - 1)):
+            #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (tile_size*x, tile_size*y))
 
     # create bottom walls
     gameDisplay.blit(pygame.image.load('./Art/wall_bottomleft.png'), (0, display_height-tile_size*2))
@@ -55,10 +60,10 @@ def walls():
     gameDisplay.blit(pygame.image.load('./Art/wall_left_end.png'), (((display_height/32)/2 + 1)*tile_size, display_height-tile_size*2))
 
     # fill in floor in bottom doorway
-    gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2 - 1)*tile_size, display_height-tile_size*2))
-    gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2)*tile_size, display_height-tile_size*2))
-    gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2 - 1)*tile_size, display_height-tile_size))
-    gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2)*tile_size, display_height-tile_size))
+    #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2 - 1)*tile_size, display_height-tile_size*2))
+    #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2)*tile_size, display_height-tile_size*2))
+    #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2 - 1)*tile_size, display_height-tile_size))
+    #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2)*tile_size, display_height-tile_size))
 
 
 def game_loop():
@@ -95,9 +100,8 @@ def game_loop():
         # change player coordinates then draw
         x += x_change
         y += y_change
-        gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
-        ### Draw scenery then enemies here ###
-        walls()
+
+        # check collision with walls
         if y + character_size >= display_height - tile_size*2 :
             y_change = 0
             y = display_height - tile_size*2 - character_size
@@ -112,6 +116,10 @@ def game_loop():
             x = display_width - tile_size - character_size
 
 
+        gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
+        ### Draw scenery then enemies here ###
+        room()
+        
         ### Draw scenery then enemies here ###
         player(x, y)
 
