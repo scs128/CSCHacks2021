@@ -49,6 +49,7 @@ def walls():
         gameDisplay.blit(pygame.image.load('./Art/wall_straight.png'), (tile_size*x, display_height-tile_size*2))
     for x in range(int((display_width/32)/2 + 2), int(display_width/32 - 1)):
         gameDisplay.blit(pygame.image.load('./Art/wall_straight.png'), (tile_size*x, display_height-tile_size*2))
+        
     gameDisplay.blit(pygame.image.load('./Art/wall_right_end.png'), (((display_height/32)/2 - 2)*tile_size, display_height-tile_size*2))
     gameDisplay.blit(pygame.image.load('./Art/wall_left_end.png'), (((display_height/32)/2 + 1)*tile_size, display_height-tile_size*2))
 
@@ -102,7 +103,7 @@ def game_loop():
         player(x, y)
 
         pygame.display.update() #also can use pygame.display.flip(), update allows a parameter to specifically update
-        clock.tick(60) #sets frames per second
+        clock.tick(120) #sets frames per second
 
 
 game_loop()
