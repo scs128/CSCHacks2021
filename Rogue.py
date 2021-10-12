@@ -11,6 +11,7 @@ green = (0, 255, 0)
 blue = (0, 0, 255)
 
 tile_size = 32 # pixel size per tile
+character_size = 32
 
 player_speed = 3 # number of pixels player moves per action
 
@@ -63,7 +64,7 @@ def walls():
 def game_loop():
     
     x = (display_width * 0.45)
-    y = (display_height * 0.8)
+    y = (display_height * 0.5)
     x_change = 0
     y_change = 0
 
@@ -97,6 +98,18 @@ def game_loop():
         gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
         ### Draw scenery then enemies here ###
         walls()
+        if y + character_size >= display_height - tile_size*2 :
+            y_change = 0
+            y = display_height - tile_size*2 - character_size
+        elif y <= 64 - 16:
+            y_change = 0
+            y = 64 - 16
+        if x <= 32:
+            x_change = 0
+            x = 32
+        elif x >= display_width - tile_size - character_size:
+            x_change = 0
+            x = display_width - tile_size - character_size
 
 
         ### Draw scenery then enemies here ###
