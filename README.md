@@ -1,7 +1,7 @@
-# CSC Hacks [Title in Progress]
+# CSC Hacks [Title in Progress] - Scott Branch
 
 ## Project Description
-We want to create a game mainly using python.
+We are aiming to create a roguelike-esq game set in a daily office setting. We hope to implement random precedural generation of floors, a weapons shop, and interesting combat.
 
 ## Team Information
 Scott Sullivan
