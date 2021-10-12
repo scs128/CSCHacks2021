@@ -1,4 +1,4 @@
-# CSC Hacks [Title in Progress] - Scott Branch
+# CSC Hacks [Title in Progress]
 
 ## Project Description
 We are aiming to create a roguelike-esq game set in a daily office setting. We hope to implement random precedural generation of floors, a weapons shop, and interesting combat.
