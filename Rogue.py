@@ -1,5 +1,7 @@
 import pygame
 
+#blah blah blah
+
 # must be an even multiple of 32
 display_width = 512
 display_height = 512
@@ -21,11 +23,12 @@ clock = pygame.time.Clock() #pygame clock based off frames apparently
 
 #playerImg = pygame.image.load('baldGuy.png') #load player image
 
+objectImg = pygame.image.load("image.png")
 
 
 def player(x, y):
     gameDisplay.blit(pygame.image.load('./Art/warrior.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
-
+ 
 def room():
     #if display_width == 320 and display_height == 320:
         #gameDisplay.blit(pygame.image.load('./Art/floortiles_320x320.png'), (0, 0))
