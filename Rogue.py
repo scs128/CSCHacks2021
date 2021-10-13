@@ -1,8 +1,8 @@
 import pygame
 
 # must be an even multiple of 32
-display_width = 640
-display_height = 640
+display_width = 512
+display_height = 512
 
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -27,10 +27,10 @@ def player(x, y):
     gameDisplay.blit(pygame.image.load('./Art/warrior.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
 
 def room():
-    if display_width == 320 and display_height == 320:
-        gameDisplay.blit(pygame.image.load('./Art/floortiles_320x320.png'), (0, 0))
-    elif display_width == 640 and display_height == 640:
-        gameDisplay.blit(pygame.image.load('./Art/floortiles_640x640.png'), (0, 0))
+    #if display_width == 320 and display_height == 320:
+        #gameDisplay.blit(pygame.image.load('./Art/floortiles_320x320.png'), (0, 0))
+    #elif display_width == 640 and display_height == 640:
+    gameDisplay.blit(pygame.image.load('./Art/floortiles_640x640.png'), (0, 0))
     
     # create top row of walls
     gameDisplay.blit(pygame.image.load('./Art/wall_topleft.png'), (0, 0))
@@ -45,8 +45,6 @@ def room():
     for y in range(2, int(display_height/32 - 2)):
         gameDisplay.blit(pygame.image.load('./Art/wall_top_ns.png'), (0, tile_size*y))
         gameDisplay.blit(pygame.image.load('./Art/wall_top_ns.png'), (display_width-tile_size, tile_size*y))
-        #for x in range(1, int(display_width/32 - 1)):
-            #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (tile_size*x, tile_size*y))
 
     # create bottom walls
     gameDisplay.blit(pygame.image.load('./Art/wall_bottomleft.png'), (0, display_height-tile_size*2))
@@ -58,12 +56,6 @@ def room():
         
     gameDisplay.blit(pygame.image.load('./Art/wall_right_end.png'), (((display_height/32)/2 - 2)*tile_size, display_height-tile_size*2))
     gameDisplay.blit(pygame.image.load('./Art/wall_left_end.png'), (((display_height/32)/2 + 1)*tile_size, display_height-tile_size*2))
-
-    # fill in floor in bottom doorway
-    #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2 - 1)*tile_size, display_height-tile_size*2))
-    #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2)*tile_size, display_height-tile_size*2))
-    #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2 - 1)*tile_size, display_height-tile_size))
-    #gameDisplay.blit(pygame.image.load('./Art/floortile.png'), (((display_height/32)/2)*tile_size, display_height-tile_size))
 
 
 def game_loop():
