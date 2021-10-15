@@ -17,3 +17,7 @@ Andrew Fiore
 Matt Shiber
 * Pitt Statistics, 2023
 * mds168@pitt.edu
+
+## MVP Demo
+
+TODO: Explain how to demo our project (download python, pygame, and any other dependencies)
