@@ -1,5 +1,7 @@
 import pygame
 
+#blah blah blah
+
 # must be an even multiple of 32
 display_width = 512
 display_height = 512
@@ -22,10 +24,49 @@ clock = pygame.time.Clock() #pygame clock based off frames apparently
 #playerImg = pygame.image.load('baldGuy.png') #load player image
 
 
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super()
+        self.image = pygame.image.load("./Art/Oswaldo_Up.png")
+        self.rect = self.image.get_rect()
 
-def player(x, y):
-    gameDisplay.blit(pygame.image.load('./Art/warrior.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
+        self.x = 0
+        self.y = 0
+        self.speed = 3
+        self.direction = "UP"
 
+    def move(self):
+        pressed_keys = pygame.key.get_pressed()
+
+        if pressed_keys[pygame.K_LEFT]:
+            self.direction = "LEFT"
+            self.x -= self.speed
+        elif pressed_keys[pygame.K_RIGHT]:
+            self.direction = "RIGHT"
+            self.x += self.speed
+        elif pressed_keys[pygame.K_DOWN]:
+            self.direction = "DOWN"
+            self.y += self.speed
+        elif pressed_keys[pygame.K_UP]:
+            self.direction = "UP"
+            self.y -= self.speed
+
+        gameDisplay.blit(self.image, (self.x, self.y))
+
+
+        self.rect.topleft = (self.x, self.y)
+        #pygame.draw.rect(gameDisplay, black, self.rect)
+            
+        
+    def update(self):
+        pass
+
+    def attack(self):
+        pass
+
+#def player(x, y):
+    #gameDisplay.blit(pygame.image.load('./Art/Oswaldo_Up.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
+ 
 def room():
     #if display_width == 320 and display_height == 320:
         #gameDisplay.blit(pygame.image.load('./Art/floortiles_320x320.png'), (0, 0))
@@ -67,53 +108,59 @@ def game_loop():
 
     exit_game = False
 
+    player = Player()
+
     while not exit_game:
         for event in pygame.event.get():  # event handling loop (inputs and shit)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
             
-            if event.type == pygame.KEYDOWN: # basic movement currently with just one image, implement movement images
-                if event.key == pygame.K_LEFT:
-                    x_change = -player_speed
-                if event.key == pygame.K_RIGHT:
-                    x_change = player_speed
-                if event.key == pygame.K_UP:
-                    y_change = -player_speed
-                if event.key == pygame.K_DOWN:
-                    y_change = player_speed
+            #if event.type == pygame.KEYDOWN: # basic movement currently with just one image, implement movement images
+                #if event.key == pygame.K_LEFT:
+                    #x_change = -player_speed
+                #if event.key == pygame.K_RIGHT:
+                    #x_change = player_speed
+                #if event.key == pygame.K_UP:
+                    #y_change = -player_speed
+                #if event.key == pygame.K_DOWN:
+                    #y_change = player_speed
 
-            if event.type == pygame.KEYUP: # stop moving in a direction
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    x_change = 0
-                if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                    y_change = 0
+            #if event.type == pygame.KEYUP: # stop moving in a direction
+                #if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    #x_change = 0
+                #if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                    #y_change = 0
 
         # change player coordinates then draw
-        x += x_change
-        y += y_change
+        #x += x_change
+        #y += y_change
+
 
         # check collision with walls
-        if y + character_size >= display_height - tile_size*2 :
-            y_change = 0
-            y = display_height - tile_size*2 - character_size
-        elif y <= 64 - 16:
-            y_change = 0
-            y = 64 - 16
-        if x <= 32:
-            x_change = 0
-            x = 32
-        elif x >= display_width - tile_size - character_size:
-            x_change = 0
-            x = display_width - tile_size - character_size
+        #if y + character_size >= display_height - tile_size*2 :
+            #y_change = 0
+            #y = display_height - tile_size*2 - character_size
+        #elif y <= 64 - 16:
+            #y_change = 0
+            #y = 64 - 16
+        #if x <= 32:
+            #x_change = 0
+            #x = 32
+        #elif x >= display_width - tile_size - character_size:
+            #x_change = 0
+            #x = display_width - tile_size - character_size
 
 
         gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
         ### Draw scenery then enemies here ###
         room()
+
+        player.move()
+
         
         ### Draw scenery then enemies here ###
-        player(x, y)
+        #player(x, y)
 
         pygame.display.update() #also can use pygame.display.flip(), update allows a parameter to specifically update
         clock.tick(120) #sets frames per second
