@@ -1,11 +1,7 @@
 import pygame
-<<<<<<< HEAD
-from pygame.sprite import collide_mask, collide_rect
-=======
 import random
-from pygame.sprite import collide_mask, collide_rect
+from pygame.sprite import collide_mask, collide_rect, collide_rect_ratio
 
->>>>>>> main
 #blah blah blah
 
 # must be an even multiple of 32
@@ -20,7 +16,7 @@ blue = (0, 0, 255)
 
 tile_size = 32 # pixel size per tile
 character_size = 32
-obstacle_list= ['./Art/barrel.png','./Art/table_no_cloth.png']# list of sprites to be loaded in as obstacles
+
 player_speed = 3 # number of pixels player moves per action
 
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #set up frame for game
@@ -30,31 +26,23 @@ clock = pygame.time.Clock() #pygame clock based off frames apparently
 #playerImg = pygame.image.load('baldGuy.png') #load player image
 
 class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading and spawning
-<<<<<<< HEAD
-    def __init__(self):
-        super()
-        self.image = pygame.image.load(obstacle_list[0])#can be used to blit later
-=======
     obstacle_list = ['./Art/barrel.png','./Art/table_no_cloth.png']# list of sprites to be loaded in as obstacles
 
     def __init__(self):
         super()
         self.image = pygame.image.load(self.obstacle_list[0])#can be used to blit later
->>>>>>> main
         self.x = 100#spawning coordinates will proabably be randomized at somepoint
         self.y = 100
-        self.rect = pygame.Rect(self.x,self.y, 32,32)# creates a rectangle and may not be strictly necessary if using collide_mask
-
-<<<<<<< HEAD
-obstacle_sprites = pygame.sprite.Group()#i think delete or figure out how groups work later
-obstacle  = Obstacle()#makes Obstacle easier to work with
-=======
+        self.width  = self.image.get_width()
+        self.height =  self.image.get_height()#if ~8 pixels are subtracted can be used to make depth but then have to figure out redraw so you dont slid under other sprites
+        self.rect = self.image.get_rect()# creates a rectangle and may not be strictly necessary if using collide_mask
+        self.rect.topleft = (self.x,self.y)
+        self.rect.inflate_ip(-5,-5)
     def draw(self):
         gameDisplay.blit(self.image, (self.x, self.y,))#this is currently bliting barrel probably a better way to do this
 
 #obstacle_sprites = pygame.sprite.Group()#i think delete or figure out how groups work later
 
->>>>>>> main
 
 class Player(pygame.sprite.Sprite):
     walk_up = ["./Art/Oswaldo_Up.png", "./Art/Oswaldo_Up_Left.png", "./Art/Oswaldo_Up_Right.png"]
@@ -67,18 +55,10 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(self.walk_up[0])
         self.rect = self.image.get_rect()
 
-<<<<<<< HEAD
-        self.x = 300
-        self.y = 300#spawning for Oswaldo
-        self.speed_x = 3
-        self.speed_y = 3#speed of as Oswaldo in the x and y directions seperation is needed for collision
-
-=======
         self.x = 0
         self.y = 0
         self.speed_x = 3
         self.speed_y = 3
->>>>>>> main
         self.direction = "UP"
         self.walk_count = 0
         
@@ -89,25 +69,6 @@ class Player(pygame.sprite.Sprite):
         if pressed_keys[pygame.K_LEFT]:
             if self.speed_x == 0 and self.direction != "LEFT": #makes it so you can move right away from obstacle applies to all of the things 
                 self.speed_x = 3
-<<<<<<< HEAD
-            self.direction = "LEFT"
-            self.x -= self.speed_x
-        elif pressed_keys[pygame.K_RIGHT]:
-            if self.speed_x == 0 and self.direction != "RIGHT":
-                self.speed_x = 3
-            self.direction = "RIGHT"
-            self.x += self.speed_x
-        elif pressed_keys[pygame.K_DOWN]:
-            if self.speed_y == 0 and self.direction != "DOWN":
-                self.speed_y = 3
-            self.direction = "DOWN"
-            self.y += self.speed_y
-        elif pressed_keys[pygame.K_UP]:
-            if self.speed_y == 0 and self.direction != "UP":
-                self.speed_y = 3
-            self.direction = "UP"
-            self.y -= self.speed_y
-=======
             if self.direction != "LEFT" or self.walk_count + 1 >= 27:
                 self.walk_count = 0
             self.direction = "LEFT"
@@ -141,7 +102,6 @@ class Player(pygame.sprite.Sprite):
             self.y -= self.speed_y
             self.image = pygame.image.load(self.walk_up[self.walk_count//9])
             self.walk_count += 1
->>>>>>> main
 
         gameDisplay.blit(self.image, (self.x, self.y))
 
@@ -211,7 +171,6 @@ def room():
 
     for x in range(1, int(display_width/32 - 1)):
         gameDisplay.blit(pygame.image.load('./Art/wall_straight.png'), (tile_size*x, 0))
-        
 
     # create floor rows and side walls
     for y in range(2, int(display_height/32 - 2)):
@@ -240,99 +199,37 @@ def game_loop():
     exit_game = False
 
     player = Player()
-<<<<<<< HEAD
-    collide = pygame.sprite.collide_rect(player,obstacle)
-=======
     obstacle  = Obstacle()#makes Obstacle easier to work with
 
     k = random.randint(tile_size,display_width-tile_size-character_size)
 
     bigbad = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
->>>>>>> main
 
     while not exit_game:
         for event in pygame.event.get():  # event handling loop (inputs and shit)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-<<<<<<< HEAD
-            
-            #if event.type == pygame.KEYDOWN: # basic movement currently with just one image, implement movement images
-                #if event.key == pygame.K_LEFT:
-                    #x_change = -player_speed
-                #if event.key == pygame.K_RIGHT:
-                    #x_change = player_speed
-                #if event.key == pygame.K_UP:
-                    #y_change = -player_speed
-                #if event.key == pygame.K_DOWN:
-                    #y_change = player_speed
 
-            #if event.type == pygame.KEYUP: # stop moving in a direction
-                #if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    #x_change = 0
-                #if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                    #y_change = 0
-
-        # change player coordinates then draw
-        #x += x_change
-        #y += y_change
-
-
-        # check collision with walls
-        #if y + character_size >= display_height - tile_size*2 :
-            #y_change = 0
-            #y = display_height - tile_size*2 - character_size
-        #elif y <= 64 - 16:
-            #y_change = 0
-            #y = 64 - 16
-        #if x <= 32:
-            #x_change = 0
-            #x = 32
-        #elif x >= display_width - tile_size - character_size:
-            #x_change = 0
-            #x = display_width - tile_size - character_size
-
-        
-=======
-
->>>>>>> main
         gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
         ### Draw scenery then enemies here ###
         room()
 
         player.move()
-<<<<<<< HEAD
-        gameDisplay.blit(obstacle.image,(obstacle.x,obstacle.y,))#this is currently bliting barrel probably a better way to do this
-        #probably needs to be in a loop to load multiple obstacles
-
-        if collide_mask (player,obstacle) and player.direction == "LEFT":#collision_mask checks for sprite mask collision which goes beyond rectangles i think
-            player.speed_x = 0#sets player speed to zero if collides from the left and repeat for other ifs
-        if collide_mask(player,obstacle) and player.direction == "RIGHT":
-            player.speed_x = 0
-        if collide_mask(player,obstacle) and player.direction == "UP":
-            player.speed_y = 0
-        if collide_mask(player,obstacle) and player.direction == "DOWN":
-=======
         obstacle.draw()
         bigbad.draw()
+        cBuffer = 0
+        #pygame.draw.rect(gameDisplay,green,player.rect)
+        pygame.draw.rect(gameDisplay,red,obstacle.rect)
 
         if collide_rect (player,obstacle) and player.direction == "LEFT":#collision_mask checks for sprite mask collision which goes beyond rectangles i think
-            player.speed_x = 0#sets player speed to zero if collides from the left and repeat for other ifs
+            player.x = obstacle.rect.right + cBuffer#sets player speed to zero if collides from the left and repeat for other ifs
         if collide_rect(player,obstacle) and player.direction == "RIGHT":
-            player.speed_x = 0
+            player.x = obstacle.rect.left - (player.image.get_width() +cBuffer)
         if collide_rect(player,obstacle) and player.direction == "UP":
-            player.speed_y = 0
+            player.y = obstacle.rect.bottom + cBuffer
         if collide_rect(player,obstacle) and player.direction == "DOWN":
->>>>>>> main
-            player.speed_y = 0
-            #may need to change this to 4 speeds because rn collision is awkward if attempting to switch movement axis 
-            # want to check if issue is resoved with collide_rect rather than mask  
-                    #UNTESTED AS OF: 10/15 10:27
-<<<<<<< HEAD
-        
-        
-=======
->>>>>>> main
+            player.y = obstacle.rect.top -  (player.image.get_height() +cBuffer)
 
         
         ### Draw scenery then enemies here ###
@@ -358,6 +255,6 @@ quit() #end program
 # 6. 
 #
 #
-#
-#
+#TO DO
+#collsion with walls and enemies
 #
