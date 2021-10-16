@@ -1,8 +1,8 @@
 import pygame
+import random
 
 #blah blah blah
 
-# must be an even multiple of 32
 display_width = 512
 display_height = 512
 
@@ -66,7 +66,45 @@ class Player(pygame.sprite.Sprite):
 
 #def player(x, y):
     #gameDisplay.blit(pygame.image.load('./Art/Oswaldo_Up.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
- 
+
+class Enemy(object):
+    walk = [pygame.image.load('./Art/warrior.png')]
+
+    def __init__(self, x, y,end):
+        self.x= x
+        self.y = y
+        self.path = [x, end]  # This will define where our enemy starts and finishes their path.
+        self.walkCount = 0
+        self.vel = random.randrange(2,6)
+    def draw(self,gameDisplay):
+        self.move()
+        if self.walkCount + 1 >= 33:
+            self.walkCount = 0
+        
+        if self.vel > 0:
+            gameDisplay.blit(self.walk[0], (self.x,self.y))
+           # gameDisplay.blit(self.walk[self.walkCount//3], (self.x,self.y))
+            self.walkCount += 1
+        else:
+            gameDisplay.blit(self.walk[0], (self.x,self.y))
+            self.walkCount += 1
+
+    def move(self):
+        if self.vel > 0:  # If we are moving right
+            if self.x < self.path[1] + self.vel: # If we have not reached the furthest right point on our path.
+                self.x += self.vel
+            else: # Change direction and move back the other way
+                self.vel = self.vel * -1
+                self.x += self.vel
+                self.walkCount = 0
+        else: # If we are moving left
+            if self.x > self.path[0] - self.vel: # If we have not reached the furthest left point on our path
+                self.x += self.vel
+            else:  # Change direction
+                self.vel = self.vel * -1
+                self.x += self.vel
+                self.walkCount = 0
+
 def room():
     #if display_width == 320 and display_height == 320:
         #gameDisplay.blit(pygame.image.load('./Art/floortiles_320x320.png'), (0, 0))
@@ -97,6 +135,11 @@ def room():
         
     gameDisplay.blit(pygame.image.load('./Art/wall_right_end.png'), (((display_height/32)/2 - 2)*tile_size, display_height-tile_size*2))
     gameDisplay.blit(pygame.image.load('./Art/wall_left_end.png'), (((display_height/32)/2 + 1)*tile_size, display_height-tile_size*2))
+
+
+k = random.randint(tile_size,display_width-tile_size-character_size)
+
+bigbad = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
 
 
 def game_loop():
@@ -157,7 +200,7 @@ def game_loop():
         room()
 
         player.move()
-
+        bigbad.draw(gameDisplay)
         
         ### Draw scenery then enemies here ###
         #player(x, y)
