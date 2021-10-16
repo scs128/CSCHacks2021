@@ -1,5 +1,11 @@
 import pygame
+<<<<<<< HEAD
 from pygame.sprite import collide_mask, collide_rect
+=======
+import random
+from pygame.sprite import collide_mask, collide_rect
+
+>>>>>>> main
 #blah blah blah
 
 # must be an even multiple of 32
@@ -24,28 +30,58 @@ clock = pygame.time.Clock() #pygame clock based off frames apparently
 #playerImg = pygame.image.load('baldGuy.png') #load player image
 
 class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading and spawning
+<<<<<<< HEAD
     def __init__(self):
         super()
         self.image = pygame.image.load(obstacle_list[0])#can be used to blit later
+=======
+    obstacle_list = ['./Art/barrel.png','./Art/table_no_cloth.png']# list of sprites to be loaded in as obstacles
+
+    def __init__(self):
+        super()
+        self.image = pygame.image.load(self.obstacle_list[0])#can be used to blit later
+>>>>>>> main
         self.x = 100#spawning coordinates will proabably be randomized at somepoint
         self.y = 100
         self.rect = pygame.Rect(self.x,self.y, 32,32)# creates a rectangle and may not be strictly necessary if using collide_mask
 
+<<<<<<< HEAD
 obstacle_sprites = pygame.sprite.Group()#i think delete or figure out how groups work later
 obstacle  = Obstacle()#makes Obstacle easier to work with
+=======
+    def draw(self):
+        gameDisplay.blit(self.image, (self.x, self.y,))#this is currently bliting barrel probably a better way to do this
+
+#obstacle_sprites = pygame.sprite.Group()#i think delete or figure out how groups work later
+
+>>>>>>> main
 
 class Player(pygame.sprite.Sprite):
+    walk_up = ["./Art/Oswaldo_Up.png", "./Art/Oswaldo_Up_Left.png", "./Art/Oswaldo_Up_Right.png"]
+    walk_right = ["./Art/Oswaldo_Right.png", "./Art/Oswaldo_Right_Left.png", "./Art/Oswaldo_Right_Right.png"]
+    walk_left = ["./Art/Oswaldo_Left.png", "./Art/Oswaldo_Left_Left.png", "./Art/Oswaldo_Left_Right.png"]
+    walk_down = ["./Art/Oswaldo_Down.png", "./Art/Oswaldo_Down_Left.png", "./Art/Oswaldo_Down_Right.png"]
+
     def __init__(self):
         super()
-        self.image = pygame.image.load("./Art/Oswaldo_Up.png")
+        self.image = pygame.image.load(self.walk_up[0])
         self.rect = self.image.get_rect()
 
+<<<<<<< HEAD
         self.x = 300
         self.y = 300#spawning for Oswaldo
         self.speed_x = 3
         self.speed_y = 3#speed of as Oswaldo in the x and y directions seperation is needed for collision
 
+=======
+        self.x = 0
+        self.y = 0
+        self.speed_x = 3
+        self.speed_y = 3
+>>>>>>> main
         self.direction = "UP"
+        self.walk_count = 0
+        
 
     def move(self):
         pressed_keys = pygame.key.get_pressed()
@@ -53,6 +89,7 @@ class Player(pygame.sprite.Sprite):
         if pressed_keys[pygame.K_LEFT]:
             if self.speed_x == 0 and self.direction != "LEFT": #makes it so you can move right away from obstacle applies to all of the things 
                 self.speed_x = 3
+<<<<<<< HEAD
             self.direction = "LEFT"
             self.x -= self.speed_x
         elif pressed_keys[pygame.K_RIGHT]:
@@ -70,6 +107,41 @@ class Player(pygame.sprite.Sprite):
                 self.speed_y = 3
             self.direction = "UP"
             self.y -= self.speed_y
+=======
+            if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
+            self.direction = "LEFT"
+            self.x -= self.speed_x
+            self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+            self.walk_count += 1
+        elif pressed_keys[pygame.K_RIGHT]:
+            if self.speed_x == 0 and self.direction != "RIGHT":
+                self.speed_x = 3
+            if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
+            self.direction = "RIGHT"
+            self.x += self.speed_x
+            self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+            self.walk_count += 1
+        elif pressed_keys[pygame.K_DOWN]:
+            if self.speed_y == 0 and self.direction != "DOWN":
+                self.speed_y = 3
+            if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
+            self.direction = "DOWN"
+            self.y += self.speed_y
+            self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+            self.walk_count += 1
+        elif pressed_keys[pygame.K_UP]:
+            if self.speed_y == 0 and self.direction != "UP":
+                self.speed_y = 3
+            if self.direction != "UP" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
+            self.direction = "UP"
+            self.y -= self.speed_y
+            self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+            self.walk_count += 1
+>>>>>>> main
 
         gameDisplay.blit(self.image, (self.x, self.y))
 
@@ -83,6 +155,44 @@ class Player(pygame.sprite.Sprite):
 
     def attack(self):
         pass
+
+class Enemy(object):
+    walk = [pygame.image.load('./Art/warrior.png')]
+
+    def __init__(self, x, y,end):
+        self.x= x
+        self.y = y
+        self.path = [x, end]  # This will define where our enemy starts and finishes their path.
+        self.walkCount = 0
+        self.vel = random.randrange(2,6)
+    def draw(self):
+        self.move()
+        if self.walkCount + 1 >= 33:
+            self.walkCount = 0
+        
+        if self.vel > 0:
+            gameDisplay.blit(self.walk[0], (self.x,self.y))
+           # gameDisplay.blit(self.walk[self.walkCount//3], (self.x,self.y))
+            self.walkCount += 1
+        else:
+            gameDisplay.blit(self.walk[0], (self.x,self.y))
+            self.walkCount += 1
+
+    def move(self):
+        if self.vel > 0:  # If we are moving right
+            if self.x < self.path[1] + self.vel: # If we have not reached the furthest right point on our path.
+                self.x += self.vel
+            else: # Change direction and move back the other way
+                self.vel = self.vel * -1
+                self.x += self.vel
+                self.walkCount = 0
+        else: # If we are moving left
+            if self.x > self.path[0] - self.vel: # If we have not reached the furthest left point on our path
+                self.x += self.vel
+            else:  # Change direction
+                self.vel = self.vel * -1
+                self.x += self.vel
+                self.walkCount = 0
 
 #def player(x, y):
     #gameDisplay.blit(pygame.image.load('./Art/Oswaldo_Up.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
@@ -130,13 +240,22 @@ def game_loop():
     exit_game = False
 
     player = Player()
+<<<<<<< HEAD
     collide = pygame.sprite.collide_rect(player,obstacle)
+=======
+    obstacle  = Obstacle()#makes Obstacle easier to work with
+
+    k = random.randint(tile_size,display_width-tile_size-character_size)
+
+    bigbad = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
+>>>>>>> main
 
     while not exit_game:
         for event in pygame.event.get():  # event handling loop (inputs and shit)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+<<<<<<< HEAD
             
             #if event.type == pygame.KEYDOWN: # basic movement currently with just one image, implement movement images
                 #if event.key == pygame.K_LEFT:
@@ -174,11 +293,15 @@ def game_loop():
             #x = display_width - tile_size - character_size
 
         
+=======
+
+>>>>>>> main
         gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
         ### Draw scenery then enemies here ###
         room()
 
         player.move()
+<<<<<<< HEAD
         gameDisplay.blit(obstacle.image,(obstacle.x,obstacle.y,))#this is currently bliting barrel probably a better way to do this
         #probably needs to be in a loop to load multiple obstacles
 
@@ -189,12 +312,27 @@ def game_loop():
         if collide_mask(player,obstacle) and player.direction == "UP":
             player.speed_y = 0
         if collide_mask(player,obstacle) and player.direction == "DOWN":
+=======
+        obstacle.draw()
+        bigbad.draw()
+
+        if collide_rect (player,obstacle) and player.direction == "LEFT":#collision_mask checks for sprite mask collision which goes beyond rectangles i think
+            player.speed_x = 0#sets player speed to zero if collides from the left and repeat for other ifs
+        if collide_rect(player,obstacle) and player.direction == "RIGHT":
+            player.speed_x = 0
+        if collide_rect(player,obstacle) and player.direction == "UP":
+            player.speed_y = 0
+        if collide_rect(player,obstacle) and player.direction == "DOWN":
+>>>>>>> main
             player.speed_y = 0
             #may need to change this to 4 speeds because rn collision is awkward if attempting to switch movement axis 
             # want to check if issue is resoved with collide_rect rather than mask  
                     #UNTESTED AS OF: 10/15 10:27
+<<<<<<< HEAD
         
         
+=======
+>>>>>>> main
 
         
         ### Draw scenery then enemies here ###
