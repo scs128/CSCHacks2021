@@ -1,8 +1,10 @@
 import pygame
 import random
+from pygame.sprite import collide_mask, collide_rect
 
 #blah blah blah
 
+# must be an even multiple of 32
 display_width = 512
 display_height = 512
 
@@ -23,33 +25,80 @@ clock = pygame.time.Clock() #pygame clock based off frames apparently
 
 #playerImg = pygame.image.load('baldGuy.png') #load player image
 
+class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading and spawning
+    obstacle_list = ['./Art/barrel.png','./Art/table_no_cloth.png']# list of sprites to be loaded in as obstacles
 
-class Player(pygame.sprite.Sprite):
     def __init__(self):
         super()
-        self.image = pygame.image.load("./Art/Oswaldo_Up.png")
+        self.image = pygame.image.load(self.obstacle_list[0])#can be used to blit later
+        self.x = 100#spawning coordinates will proabably be randomized at somepoint
+        self.y = 100
+        self.rect = pygame.Rect(self.x,self.y, 32,32)# creates a rectangle and may not be strictly necessary if using collide_mask
+
+    def draw(self):
+        gameDisplay.blit(self.image, (self.x, self.y,))#this is currently bliting barrel probably a better way to do this
+
+#obstacle_sprites = pygame.sprite.Group()#i think delete or figure out how groups work later
+
+
+class Player(pygame.sprite.Sprite):
+    walk_up = ["./Art/Oswaldo_Up.png", "./Art/Oswaldo_Up_Left.png", "./Art/Oswaldo_Up_Right.png"]
+    walk_right = ["./Art/Oswaldo_Right.png", "./Art/Oswaldo_Right_Left.png", "./Art/Oswaldo_Right_Right.png"]
+    walk_left = ["./Art/Oswaldo_Left.png", "./Art/Oswaldo_Left_Left.png", "./Art/Oswaldo_Left_Right.png"]
+    walk_down = ["./Art/Oswaldo_Down.png", "./Art/Oswaldo_Down_Left.png", "./Art/Oswaldo_Down_Right.png"]
+
+    def __init__(self):
+        super()
+        self.image = pygame.image.load(self.walk_up[0])
         self.rect = self.image.get_rect()
 
         self.x = 0
         self.y = 0
-        self.speed = 3
+        self.speed_x = 3
+        self.speed_y = 3
         self.direction = "UP"
+        self.walk_count = 0
+        
 
     def move(self):
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[pygame.K_LEFT]:
+            if self.speed_x == 0 and self.direction != "LEFT": #makes it so you can move right away from obstacle applies to all of the things 
+                self.speed_x = 3
+            if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
             self.direction = "LEFT"
-            self.x -= self.speed
+            self.x -= self.speed_x
+            self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+            self.walk_count += 1
         elif pressed_keys[pygame.K_RIGHT]:
+            if self.speed_x == 0 and self.direction != "RIGHT":
+                self.speed_x = 3
+            if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
             self.direction = "RIGHT"
-            self.x += self.speed
+            self.x += self.speed_x
+            self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+            self.walk_count += 1
         elif pressed_keys[pygame.K_DOWN]:
+            if self.speed_y == 0 and self.direction != "DOWN":
+                self.speed_y = 3
+            if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
             self.direction = "DOWN"
-            self.y += self.speed
+            self.y += self.speed_y
+            self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+            self.walk_count += 1
         elif pressed_keys[pygame.K_UP]:
+            if self.speed_y == 0 and self.direction != "UP":
+                self.speed_y = 3
+            if self.direction != "UP" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
             self.direction = "UP"
-            self.y -= self.speed
+            self.y -= self.speed_y
+            self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+            self.walk_count += 1
 
         gameDisplay.blit(self.image, (self.x, self.y))
 
@@ -64,9 +113,6 @@ class Player(pygame.sprite.Sprite):
     def attack(self):
         pass
 
-#def player(x, y):
-    #gameDisplay.blit(pygame.image.load('./Art/Oswaldo_Up.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
-
 class Enemy(object):
     walk = [pygame.image.load('./Art/warrior.png')]
 
@@ -76,7 +122,7 @@ class Enemy(object):
         self.path = [x, end]  # This will define where our enemy starts and finishes their path.
         self.walkCount = 0
         self.vel = random.randrange(2,6)
-    def draw(self,gameDisplay):
+    def draw(self):
         self.move()
         if self.walkCount + 1 >= 33:
             self.walkCount = 0
@@ -105,6 +151,9 @@ class Enemy(object):
                 self.x += self.vel
                 self.walkCount = 0
 
+#def player(x, y):
+    #gameDisplay.blit(pygame.image.load('./Art/Oswaldo_Up.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
+ 
 def room():
     #if display_width == 320 and display_height == 320:
         #gameDisplay.blit(pygame.image.load('./Art/floortiles_320x320.png'), (0, 0))
@@ -137,11 +186,6 @@ def room():
     gameDisplay.blit(pygame.image.load('./Art/wall_left_end.png'), (((display_height/32)/2 + 1)*tile_size, display_height-tile_size*2))
 
 
-k = random.randint(tile_size,display_width-tile_size-character_size)
-
-bigbad = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
-
-
 def game_loop():
     
     x = (display_width * 0.45)
@@ -152,55 +196,38 @@ def game_loop():
     exit_game = False
 
     player = Player()
+    obstacle  = Obstacle()#makes Obstacle easier to work with
+
+    k = random.randint(tile_size,display_width-tile_size-character_size)
+
+    bigbad = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
 
     while not exit_game:
         for event in pygame.event.get():  # event handling loop (inputs and shit)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-            
-            #if event.type == pygame.KEYDOWN: # basic movement currently with just one image, implement movement images
-                #if event.key == pygame.K_LEFT:
-                    #x_change = -player_speed
-                #if event.key == pygame.K_RIGHT:
-                    #x_change = player_speed
-                #if event.key == pygame.K_UP:
-                    #y_change = -player_speed
-                #if event.key == pygame.K_DOWN:
-                    #y_change = player_speed
-
-            #if event.type == pygame.KEYUP: # stop moving in a direction
-                #if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    #x_change = 0
-                #if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                    #y_change = 0
-
-        # change player coordinates then draw
-        #x += x_change
-        #y += y_change
-
-
-        # check collision with walls
-        #if y + character_size >= display_height - tile_size*2 :
-            #y_change = 0
-            #y = display_height - tile_size*2 - character_size
-        #elif y <= 64 - 16:
-            #y_change = 0
-            #y = 64 - 16
-        #if x <= 32:
-            #x_change = 0
-            #x = 32
-        #elif x >= display_width - tile_size - character_size:
-            #x_change = 0
-            #x = display_width - tile_size - character_size
-
 
         gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
         ### Draw scenery then enemies here ###
         room()
 
         player.move()
-        bigbad.draw(gameDisplay)
+        obstacle.draw()
+        bigbad.draw()
+
+        if collide_rect (player,obstacle) and player.direction == "LEFT":#collision_mask checks for sprite mask collision which goes beyond rectangles i think
+            player.speed_x = 0#sets player speed to zero if collides from the left and repeat for other ifs
+        if collide_rect(player,obstacle) and player.direction == "RIGHT":
+            player.speed_x = 0
+        if collide_rect(player,obstacle) and player.direction == "UP":
+            player.speed_y = 0
+        if collide_rect(player,obstacle) and player.direction == "DOWN":
+            player.speed_y = 0
+            #may need to change this to 4 speeds because rn collision is awkward if attempting to switch movement axis 
+            # want to check if issue is resoved with collide_rect rather than mask  
+                    #UNTESTED AS OF: 10/15 10:27
+
         
         ### Draw scenery then enemies here ###
         #player(x, y)
