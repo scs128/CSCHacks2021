@@ -25,6 +25,11 @@ clock = pygame.time.Clock() #pygame clock based off frames apparently
 
 
 class Player(pygame.sprite.Sprite):
+    walk_up = ["./Art/Oswaldo_Up.png", "./Art/Oswaldo_Up_Left.png", "./Art/Oswaldo_Up_Right.png"]
+    walk_right = ["./Art/Oswaldo_Right.png", "./Art/Oswaldo_Right_Left.png", "./Art/Oswaldo_Right_Right.png"]
+    walk_left = ["./Art/Oswaldo_Left.png", "./Art/Oswaldo_Left_Left.png", "./Art/Oswaldo_Left_Right.png"]
+    walk_down = ["./Art/Oswaldo_Down.png", "./Art/Oswaldo_Down_Left.png", "./Art/Oswaldo_Down_Right.png"]
+
     def __init__(self):
         super()
         self.image = pygame.image.load("./Art/Oswaldo_Up.png")
@@ -34,22 +39,40 @@ class Player(pygame.sprite.Sprite):
         self.y = 0
         self.speed = 3
         self.direction = "UP"
+        self.walk_count = 0
+        
 
     def move(self):
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[pygame.K_LEFT]:
+            if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
             self.direction = "LEFT"
             self.x -= self.speed
+            self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+            self.walk_count += 1
         elif pressed_keys[pygame.K_RIGHT]:
+            if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
             self.direction = "RIGHT"
             self.x += self.speed
+            self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+            self.walk_count += 1
         elif pressed_keys[pygame.K_DOWN]:
+            if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
             self.direction = "DOWN"
             self.y += self.speed
+            self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+            self.walk_count += 1
         elif pressed_keys[pygame.K_UP]:
+            if self.direction != "UP" or self.walk_count + 1 >= 27:
+                self.walk_count = 0
             self.direction = "UP"
             self.y -= self.speed
+            self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+            self.walk_count += 1
 
         gameDisplay.blit(self.image, (self.x, self.y))
 
