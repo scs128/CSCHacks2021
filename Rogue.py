@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from pygame.sprite import collide_mask, collide_rect
 
 #blah blah blah
@@ -113,6 +114,7 @@ class Player(pygame.sprite.Sprite):
     def attack(self):
         pass
 
+
 class Enemy(object):
     walk = [pygame.image.load('./Art/warrior.png')]
 
@@ -121,9 +123,9 @@ class Enemy(object):
         self.y = y
         self.path = [x, end]  # This will define where our enemy starts and finishes their path.
         self.walkCount = 0
-        self.vel = random.randrange(2,6)
-    def draw(self):
-        self.move()
+        self.vel = 2
+    def draw(self, player):
+        self.move(player)
         if self.walkCount + 1 >= 33:
             self.walkCount = 0
         
@@ -131,25 +133,29 @@ class Enemy(object):
             gameDisplay.blit(self.walk[0], (self.x,self.y))
            # gameDisplay.blit(self.walk[self.walkCount//3], (self.x,self.y))
             self.walkCount += 1
-        else:
-            gameDisplay.blit(self.walk[0], (self.x,self.y))
-            self.walkCount += 1
-
-    def move(self):
-        if self.vel > 0:  # If we are moving right
-            if self.x < self.path[1] + self.vel: # If we have not reached the furthest right point on our path.
-                self.x += self.vel
-            else: # Change direction and move back the other way
-                self.vel = self.vel * -1
-                self.x += self.vel
-                self.walkCount = 0
-        else: # If we are moving left
-            if self.x > self.path[0] - self.vel: # If we have not reached the furthest left point on our path
-                self.x += self.vel
-            else:  # Change direction
-                self.vel = self.vel * -1
-                self.x += self.vel
-                self.walkCount = 0
+    def move(self, player):
+        # Find direction vector (dx, dy) between enemy and player.
+        dx, dy = player.x - self.x, player.y - self.y
+        dist = math.hypot(dx, dy)
+        dx, dy = dx / dist, dy / dist  # Normalize.
+        # Move along this normalized vector towards the player at current speed.
+        self.x += dx * self.vel
+        self.y += dy * self.vel
+    # def move(self):
+    #     if self.vel > 0:  # If we are moving right
+    #         if self.x < self.path[1] + self.vel: # If we have not reached the furthest right point on our path.
+    #             self.x += self.vel
+    #         else: # Change direction and move back the other way
+    #             self.vel = self.vel * -1
+    #             self.x += self.vel
+    #             self.walkCount = 0
+    #     else: # If we are moving left
+    #         if self.x > self.path[0] - self.vel: # If we have not reached the furthest left point on our path
+    #             self.x += self.vel
+    #         else:  # Change direction
+    #             self.vel = self.vel * -1
+    #             self.x += self.vel
+    #             self.walkCount = 0
 
 #def player(x, y):
     #gameDisplay.blit(pygame.image.load('./Art/Oswaldo_Up.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
@@ -201,7 +207,12 @@ def game_loop():
     k = random.randint(tile_size,display_width-tile_size-character_size)
 
     bigbad = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
-
+    # bigbad2 = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
+    # bigbad3 = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
+    # bigbad4 = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
+    # bigbad5 = Enemy(k,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), k + 200)
+    
+     
     while not exit_game:
         for event in pygame.event.get():  # event handling loop (inputs and shit)
             if event.type == pygame.QUIT:
@@ -214,7 +225,11 @@ def game_loop():
 
         player.move()
         obstacle.draw()
-        bigbad.draw()
+        bigbad.draw(player)
+        # bigbad2.draw(player)
+        # bigbad3.draw(player)
+        # bigbad4.draw(player)
+        # bigbad5.draw(player)
 
         if collide_rect (player,obstacle) and player.direction == "LEFT":#collision_mask checks for sprite mask collision which goes beyond rectangles i think
             player.speed_x = 0#sets player speed to zero if collides from the left and repeat for other ifs
