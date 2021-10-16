@@ -1,6 +1,6 @@
-from os import walk
 import pygame
-import random
+
+#blah blah blah
 
 # must be an even multiple of 32
 display_width = 512
@@ -11,7 +11,6 @@ white = (255, 255, 255)
 red = (255, 0, 0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
-
 
 tile_size = 32 # pixel size per tile
 character_size = 32
@@ -25,53 +24,49 @@ clock = pygame.time.Clock() #pygame clock based off frames apparently
 #playerImg = pygame.image.load('baldGuy.png') #load player image
 
 
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super()
+        self.image = pygame.image.load("./Art/Oswaldo_Up.png")
+        self.rect = self.image.get_rect()
 
-def player(x, y):
-    gameDisplay.blit(pygame.image.load('./Art/warrior.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
-
-class enemy(object):
-    walk = [pygame.image.load('./Art/warrior.png')]
-
-    def __init__(self, x, y,end):
-        self.x= x
-        self.y = y
-        self.path = [x, end]  # This will define where our enemy starts and finishes their path.
-        self.walkCount = 0
-        self.vel = random.randrange(2,6)
-    def draw(self,gameDisplay):
-        self.move()
-        if self.walkCount + 1 >= 33:
-            self.walkCount = 0
-        
-        if self.vel > 0:
-            gameDisplay.blit(self.walk[0], (self.x,self.y))
-           # gameDisplay.blit(self.walk[self.walkCount//3], (self.x,self.y))
-            self.walkCount += 1
-        else:
-            gameDisplay.blit(self.walk[0], (self.x,self.y))
-            self.walkCount += 1
+        self.x = 0
+        self.y = 0
+        self.speed = 3
+        self.direction = "UP"
 
     def move(self):
-        if self.vel > 0:  # If we are moving right
-            if self.x < self.path[1] + self.vel: # If we have not reached the furthest right point on our path.
-                self.x += self.vel
-            else: # Change direction and move back the other way
-                self.vel = self.vel * -1
-                self.x += self.vel
-                self.walkCount = 0
-        else: # If we are moving left
-            if self.x > self.path[0] - self.vel: # If we have not reached the furthest left point on our path
-                self.x += self.vel
-            else:  # Change direction
-                self.vel = self.vel * -1
-                self.x += self.vel
-                self.walkCount = 0
+        pressed_keys = pygame.key.get_pressed()
+
+        if pressed_keys[pygame.K_LEFT]:
+            self.direction = "LEFT"
+            self.x -= self.speed
+        elif pressed_keys[pygame.K_RIGHT]:
+            self.direction = "RIGHT"
+            self.x += self.speed
+        elif pressed_keys[pygame.K_DOWN]:
+            self.direction = "DOWN"
+            self.y += self.speed
+        elif pressed_keys[pygame.K_UP]:
+            self.direction = "UP"
+            self.y -= self.speed
+
+        gameDisplay.blit(self.image, (self.x, self.y))
 
 
+        self.rect.topleft = (self.x, self.y)
+        #pygame.draw.rect(gameDisplay, black, self.rect)
+            
+        
+    def update(self):
+        pass
 
+    def attack(self):
+        pass
 
-
-
+#def player(x, y):
+    #gameDisplay.blit(pygame.image.load('./Art/Oswaldo_Up.png'), (x,y)) #draw carImg onto background at (x,y) coordinates
+ 
 def room():
     #if display_width == 320 and display_height == 320:
         #gameDisplay.blit(pygame.image.load('./Art/floortiles_320x320.png'), (0, 0))
@@ -103,12 +98,9 @@ def room():
     gameDisplay.blit(pygame.image.load('./Art/wall_right_end.png'), (((display_height/32)/2 - 2)*tile_size, display_height-tile_size*2))
     gameDisplay.blit(pygame.image.load('./Art/wall_left_end.png'), (((display_height/32)/2 + 1)*tile_size, display_height-tile_size*2))
 
-i = random.randint(tile_size,display_width-tile_size-character_size)
-bigbad = enemy(i,random.randint(tile_size*2,display_height-(tile_size*2)-character_size), i + 200)
-                
+
 def game_loop():
     
-
     x = (display_width * 0.45)
     y = (display_height * 0.5)
     x_change = 0
@@ -116,54 +108,59 @@ def game_loop():
 
     exit_game = False
 
+    player = Player()
+
     while not exit_game:
         for event in pygame.event.get():  # event handling loop (inputs and shit)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-      
-            if event.type == pygame.KEYDOWN: # basic movement currently with just one image, implement movement images
-                if event.key == pygame.K_LEFT:
-                    x_change = -player_speed
-                if event.key == pygame.K_RIGHT:
-                    x_change = player_speed
-                if event.key == pygame.K_UP:
-                    y_change = -player_speed
-                if event.key == pygame.K_DOWN:
-                    y_change = player_speed
+            
+            #if event.type == pygame.KEYDOWN: # basic movement currently with just one image, implement movement images
+                #if event.key == pygame.K_LEFT:
+                    #x_change = -player_speed
+                #if event.key == pygame.K_RIGHT:
+                    #x_change = player_speed
+                #if event.key == pygame.K_UP:
+                    #y_change = -player_speed
+                #if event.key == pygame.K_DOWN:
+                    #y_change = player_speed
 
-            if event.type == pygame.KEYUP: # stop moving in a direction
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    x_change = 0
-                if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                    y_change = 0
+            #if event.type == pygame.KEYUP: # stop moving in a direction
+                #if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    #x_change = 0
+                #if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                    #y_change = 0
 
         # change player coordinates then draw
-        x += x_change
-        y += y_change
+        #x += x_change
+        #y += y_change
+
 
         # check collision with walls
-        if y + character_size >= display_height - tile_size*2 :
-            y_change = 0
-            y = display_height - tile_size*2 - character_size
-        elif y <= 64 - 16:
-            y_change = 0
-            y = 64 - 16
-        if x <= 32:
-            x_change = 0
-            x = 32
-        elif x >= display_width - tile_size - character_size:
-            x_change = 0
-            x = display_width - tile_size - character_size
+        #if y + character_size >= display_height - tile_size*2 :
+            #y_change = 0
+            #y = display_height - tile_size*2 - character_size
+        #elif y <= 64 - 16:
+            #y_change = 0
+            #y = 64 - 16
+        #if x <= 32:
+            #x_change = 0
+            #x = 32
+        #elif x >= display_width - tile_size - character_size:
+            #x_change = 0
+            #x = display_width - tile_size - character_size
 
 
         gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
         ### Draw scenery then enemies here ###
         room()
+
+        player.move()
+
         
         ### Draw scenery then enemies here ###
-        player(x, y)
-        bigbad.draw(gameDisplay)
+        #player(x, y)
 
         pygame.display.update() #also can use pygame.display.flip(), update allows a parameter to specifically update
         clock.tick(120) #sets frames per second
