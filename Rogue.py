@@ -174,26 +174,19 @@ class Player(pygame.sprite.Sprite):
 
 
 class Enemy(object):
-    walk = [pygame.image.load('./Art/warrior.png')]
-
+    walk_up = ["./Art/BigBad_Up.png", "./Art/BigBad_Up_Left.png", "./Art/BigBad_Up_Right.png"]
+    walk_right = ["./Art/BigBad_Right.png", "./Art/BigBad_Right_Left.png", "./Art/BigBad_Right_Right.png"]
+    walk_left = ["./Art/BigBad_Left.png", "./Art/BigBad_Left_Left.png", "./Art/BigBad_Left_Right.png"]
+    walk_down = ["./Art/BigBad_Down.png", "./Art/BigBad_Down_Left.png", "./Art/BigBad_Down_Right.png"]
     def __init__(self, x, y):
         self.x= x
         self.y = y
-        self.image = pygame.image.load('./Art/warrior.png')
-        self.walkCount = 0
+        self.image = pygame.image.load('./Art/BigBad_Down.png')
+        # self.path = [x, end]  # This will define where our enemy starts and finishes their path.
+        self.walk_count = 0
         self.vel = 1
         self.rect = self.image.get_rect()
-
-    def draw(self, player):
-        self.move(player)
-        if self.walkCount + 1 >= 33:
-            self.walkCount = 0
-        
-        if self.vel > 0:
-            gameDisplay.blit(self.walk[0], (self.x,self.y))
-            self.rect.topleft = (self.x, self.y)
-           # gameDisplay.blit(self.walk[self.walkCount//3], (self.x,self.y))
-            self.walkCount += 1
+        self.direction = "UP"
 
     def move(self, player):
         # Find direction vector (dx, dy) between enemy and player.
@@ -204,6 +197,65 @@ class Enemy(object):
         self.x += dx * self.vel
         self.y += dy * self.vel
         self.damage(player, dx, dy)
+
+        self.walkCount = 0
+        if dx >= 0 and dy < 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "RIGHT"
+                self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "UP" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "UP"
+                self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                self.walk_count += 1
+        elif dx >= 0 and dy > 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "RIGHT"
+                self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "DOWN"
+                self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                self.walk_count += 1
+        elif dx <= 0 and dy < 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "LEFT"
+                self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "UP" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "UP"
+                self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                self.walk_count += 1
+        elif dx <= 0 and dy > 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "LEFT"
+                self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "DOWN"
+                self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                self.walk_count += 1
+            
+        gameDisplay.blit(self.image, (self.x, self.y))
+
+
+        self.rect.topleft = (self.x, self.y)
 
     def damage(self, player, dx, dy):
         if collide_rect (self, player) and player.vulnerable:
@@ -325,19 +377,18 @@ def game_loop():
         
         room()
 
-        for x in projectiles:
-            x.move()
 
+        bigbad.move(player) 
         wall_boxes()
         player.move()
-                    
+        
+        for x in projectiles:
+            x.move()
             
         for index in range(0,1):
             obstacle_list[index].draw()
             collision(player,obstacle_list[index])
-            
-        
-        bigbad.draw(player)       
+
         #pygame.draw.rect(gameDisplay,green,player.rect)
         #pygame.draw.rect(gameDisplay,red,obstacle.rect)
 
