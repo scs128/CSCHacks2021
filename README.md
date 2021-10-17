@@ -1,4 +1,4 @@
-# CSC Hacks [Title in Progress]
+# A Case of the Monday's [CSC Hacks 2021]
 
 ## Project Description
 We are aiming to create a roguelike-esq game set in a daily office setting. We hope to implement random precedural generation of floors, a weapons shop, and interesting combat.
