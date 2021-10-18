@@ -31,7 +31,8 @@ clock = pygame.time.Clock() #pygame clock based off frames apparently
 
 class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading and spawning
 
-    obstacle_list = ['./Art/barrel.png','./Art/table_no_cloth.png']# list of sprites to be loaded in as obstacles
+    obstacle_list = ['./Art/barrel.png','./Art/table_no_cloth.png','./Art/table_cloth.png','./Art/potted_plant.png'
+    ,'./Art/lab_bench_no_chem.png','./Art/lab_bench_chem.png','./Art/old_server.png']# list of sprites to be loaded in as obstacles
 
     def __init__(self,index):
         pygame.sprite.Sprite.__init__(self)
@@ -264,9 +265,8 @@ def game_loop():
     exit_game = False
     
     player = Player()
-    obstacle1 = Obstacle(0)#makes Obstacle easier to work with
-    obstacle2 = Obstacle(1)
-    obstacle_list = [obstacle1,obstacle2]
+
+    obstacle_list = [Obstacle(0),Obstacle(1),Obstacle(2),Obstacle(3),Obstacle(4),Obstacle(5),Obstacle(6)]
     
     
     k = random.randint(tile_size,display_width-tile_size-character_size)
@@ -285,15 +285,9 @@ def game_loop():
         room()
         wall_boxes()
         player.move()
-        def indexing_list():            
-            index = [0,1]
-            for i in index:
-                x=i
-                obstacle_list[x].draw()
-                collision(player,obstacle_list[x])
-                i += 1
-            return(x)
-        indexing_list()
+        for index in range(0,7):
+            obstacle_list[index].draw()
+            collision(player,obstacle_list[index])
         bigbad.draw(player)       
         #pygame.draw.rect(gameDisplay,green,player.rect)
         #pygame.draw.rect(gameDisplay,red,obstacle.rect)
