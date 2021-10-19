@@ -21,3 +21,8 @@ Matt Shiber
 ## MVP Demo
 
 TODO: Explain how to demo our project (download python, pygame, and any other dependencies)
+### Dependencies
+ - Python
+ - Pygame
+
+### How to Setup Our Game
