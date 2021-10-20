@@ -35,8 +35,9 @@ Matt Shiber
 3. Now that you have the dependencies downloaded, all you have to do is clone our [repository](https://github.com/scs128/CSCHacks2021) and run ```Rogue.py``` in the terminal.
 
 ### Gameplay
-###### Controls
+#### Controls
 WASD: Player movement
+
 Arrow Keys: Shoot Projectile
 
 Right now your goal is to survive and rack up as many zombie kills as possible. Your current score will be displayed in the top right, and your health will be displayed in the top left. Player movement is locked on the x and y axes, moving with ```WASD``` keys. Attack the zombies by shooting placeholder projectiles in a direction corresponding to each arrow key. Good luck!
