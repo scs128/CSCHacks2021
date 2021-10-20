@@ -52,7 +52,6 @@ class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading a
 
         for i in range(0, int(self.height/32)):
             for j in range(0, 0+int(self.width/32)):
-                print("row: " + str(i+row) + "\tcol: " + str(j+col))
                 obstacle_grid[i+row][j+col] = 1
         
     def draw(self):
@@ -211,33 +210,41 @@ class Enemy(object):
         dist = math.hypot(dx, dy)
         dx, dy = dx / dist, dy / dist  # Normalize.
         # Move along this normalized vector towards the player at current speed.
-        self.x += dx * self.vel
-        self.y += dy * self.vel
+        current_col = self.x//32
+        current_row = self.y//32
+        next_col = int((self.x + dx * self.vel)//32)
+        next_row = int((self.y + dy * self.vel)//32)
         self.damage(player, dx, dy)
 
+        print("current row: " + str(current_row) + "\current col: " + str(current_col))
+        print("next row: " + str(next_row) + "\tnext col: " + str(next_col))
+        print(str(obstacle_grid[next_row][next_col]))
+        print(obstacle_grid)
         self.walkCount = 0
-        if self.collision_side != "NONE":
-            if self.collision_side == "UP":
+        if next_col < 0 or next_row < 0 or next_col > len(obstacle_grid[0])-1 or next_row > len(obstacle_grid)-1 or obstacle_grid[next_row][next_col] == 1:
+            if current_row > next_row:
                 if dx >= 0:
                     self.x += self.vel
                 else:
                     self.x -= self.vel
-            elif self.collision_side == "DOWN":
+            elif current_row < next_row:
                 if dx >= 0:
                     self.x += self.vel
                 else:
                     self.x -= self.vel
-            elif self.collision_side == "LEFT":
+            elif current_col > next_col:
                 if dy >= 0:
                     self.y += self.vel
                 else:
                     self.y -= self.vel
-            elif self.collision_side == "RIGHT":
+            elif current_col < next_col:
                 if dy >= 0:
                     self.y += self.vel
                 else:
                     self.y -= self.vel
         else:
+            self.x += dx * self.vel
+            self.y += dy * self.vel
             if dx >= 0 and dy < 0:
                 if abs(dx) > abs(dy):
                     if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
@@ -302,7 +309,6 @@ class Enemy(object):
             player.x += dx * 15
             player.y += dy * 15
             player.vulnerable = False
-            print(player.health)
             if player.health <= 0:
                 pygame.quit()
                 quit()
@@ -487,8 +493,8 @@ def game_loop():
         for obstacle in obstacle_list:
             obstacle.draw()
             collision(player,obstacle)
-            for enemy in enemies:    
-                collision(enemy,obstacle)
+            #for enemy in enemies:    
+                #collision(enemy,obstacle)
             
 
         #pygame.draw.rect(gameDisplay,green,player.rect)
