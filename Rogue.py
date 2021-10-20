@@ -4,7 +4,8 @@ from pygame import sprite
 from pygame import image
 from pygame.sprite import collide_mask, collide_rect, collide_rect_ratio
 import math
-#blah blah blah
+
+pygame.init()
 
 # must be an even multiple of 32
 display_width = 640
@@ -21,31 +22,33 @@ character_size = 32
 
 player_speed = 3 # number of pixels player moves per action
 
+obstacle_grid = [[0 for i in range(int(display_width/32-2))] for j in range(int(display_height/32-4))]
+
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #set up frame for game
 pygame.display.set_caption('Rogue-Like') #change title on the game window
-clock = pygame.time.Clock() #pygame clock based off frames apparently
-
-#playerImg = pygame.image.load('baldGuy.png') #load player image
-
-    
+clock = pygame.time.Clock() #pygame clock based off frames apparently    
 
 class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading and spawning
 
     obstacle_list = ['./Art/barrel.png','./Art/table_no_cloth.png','./Art/table_cloth.png','./Art/potted_plant.png'
     ,'./Art/lab_bench_no_chem.png','./Art/lab_bench_chem.png','./Art/old_server.png']# list of sprites to be loaded in as obstacles
 
-    def __init__(self,index):
+    def __init__(self, index, row, col):
         pygame.sprite.Sprite.__init__(self)
         super()
         self.image = pygame.image.load(self.obstacle_list[index])#can be used to blit later
 
-        self.x = random.randint(32,400)
-        self.y = random.randint(64, 400)
+        self.x = col*32 + 32
+        self.y = row*32 + 64
         self.width  = self.image.get_width()
         self.height =  self.image.get_height()#if ~8 pixels are subtracted can be used to make depth but then have to figure out redraw so you dont slid under other sprites
         self.rect = self.image.get_rect()# creates a rectangle and may not be strictly necessary if using collide_mask
         self.rect.topleft = (self.x,self.y)
         self.rect.inflate(-5,-5)
+
+        for i in range(0, int(self.height/32)):
+            for j in range(0, 0+int(self.width/32)):
+                obstacle_grid[i+row][j+col] = 1
         
     def draw(self):
         gameDisplay.blit(self.image, (self.x, self.y,))#this is currently bliting barrel probably a better way to do this
@@ -79,15 +82,19 @@ def wall_boxes():
     walls = [top_wall,right_wall,left_wall,botleft_wall,botright_wall]
     return(walls)
     
-def collision(player, obstacle):
-    if collide_rect (player,obstacle) and player.direction == "LEFT":#collision_mask checks for sprite mask collision which goes beyond rectangles i think
-            player.x = obstacle.rect.right #sets player speed to zero if collides from the left and repeat for other ifs
-    if collide_rect (player,obstacle) and player.direction == "RIGHT":
-            player.x = obstacle.rect.left - (player.image.get_width() )
-    if collide_rect (player,obstacle) and player.direction == "UP":
-            player.y = obstacle.rect.bottom
-    if collide_rect (player,obstacle) and player.direction == "DOWN":
-            player.y = obstacle.rect.top -  (player.image.get_height())
+def collision(character, obstacle):
+    if collide_rect (character,obstacle) and character.direction == "LEFT":#collision_mask checks for sprite mask collision which goes beyond rectangles i think
+            character.x = obstacle.rect.right #sets player speed to zero if collides from the left and repeat for other ifs
+            return True
+    if collide_rect (character,obstacle) and character.direction == "RIGHT":
+            character.x = obstacle.rect.left - (character.width)
+            return True
+    if collide_rect (character,obstacle) and character.direction == "UP":
+            character.y = obstacle.rect.bottom
+            return True
+    if collide_rect (character,obstacle) and character.direction == "DOWN":
+            character.y = obstacle.rect.top - (character.height)
+            return True
    
 
 #obstacle_group = pygame.sprite.Group()        
@@ -114,8 +121,8 @@ class Player(pygame.sprite.Sprite):
         self.can_attack = True
         self.vulnerability_clock = 0
         self.attack_clock = 0
-        self.image_height = self.image.get_height()
-        self.image_width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.width = self.image.get_width()
         
 
     def move(self):
@@ -177,7 +184,7 @@ class Enemy(object):
     walk_right = ["./Art/BigBad_Right.png", "./Art/BigBad_Right_Left.png", "./Art/BigBad_Right_Right.png"]
     walk_left = ["./Art/BigBad_Left.png", "./Art/BigBad_Left_Left.png", "./Art/BigBad_Left_Right.png"]
     walk_down = ["./Art/BigBad_Down.png", "./Art/BigBad_Down_Left.png", "./Art/BigBad_Down_Right.png"]
-    def __init__(self, x, y):
+    def __init__(self, x, y, health):
         self.x= x
         self.y = y
         self.image = pygame.image.load('./Art/BigBad_Down.png')
@@ -186,6 +193,10 @@ class Enemy(object):
         self.vel = 1
         self.rect = self.image.get_rect()
         self.direction = "UP"
+        self.health = health
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.collision_side = "NONE"
 
     def move(self, player):
         # Find direction vector (dx, dy) between enemy and player.
@@ -198,58 +209,80 @@ class Enemy(object):
         self.damage(player, dx, dy)
 
         self.walkCount = 0
-        if dx >= 0 and dy < 0:
-            if abs(dx) > abs(dy):
-                if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
-                    self.walk_count = 0
-                self.direction = "RIGHT"
-                self.image = pygame.image.load(self.walk_right[self.walk_count//9])
-                self.walk_count += 1
-            else:
-                if self.direction != "UP" or self.walk_count + 1 >= 27:
-                    self.walk_count = 0
-                self.direction = "UP"
-                self.image = pygame.image.load(self.walk_up[self.walk_count//9])
-                self.walk_count += 1
-        elif dx >= 0 and dy > 0:
-            if abs(dx) > abs(dy):
-                if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
-                    self.walk_count = 0
-                self.direction = "RIGHT"
-                self.image = pygame.image.load(self.walk_right[self.walk_count//9])
-                self.walk_count += 1
-            else:
-                if self.direction != "DOWN" or self.walk_count + 1 >= 27:
-                    self.walk_count = 0
-                self.direction = "DOWN"
-                self.image = pygame.image.load(self.walk_down[self.walk_count//9])
-                self.walk_count += 1
-        elif dx <= 0 and dy < 0:
-            if abs(dx) > abs(dy):
-                if self.direction != "LEFT" or self.walk_count + 1 >= 27:
-                    self.walk_count = 0
-                self.direction = "LEFT"
-                self.image = pygame.image.load(self.walk_left[self.walk_count//9])
-                self.walk_count += 1
-            else:
-                if self.direction != "UP" or self.walk_count + 1 >= 27:
-                    self.walk_count = 0
-                self.direction = "UP"
-                self.image = pygame.image.load(self.walk_up[self.walk_count//9])
-                self.walk_count += 1
-        elif dx <= 0 and dy > 0:
-            if abs(dx) > abs(dy):
-                if self.direction != "LEFT" or self.walk_count + 1 >= 27:
-                    self.walk_count = 0
-                self.direction = "LEFT"
-                self.image = pygame.image.load(self.walk_left[self.walk_count//9])
-                self.walk_count += 1
-            else:
-                if self.direction != "DOWN" or self.walk_count + 1 >= 27:
-                    self.walk_count = 0
-                self.direction = "DOWN"
-                self.image = pygame.image.load(self.walk_down[self.walk_count//9])
-                self.walk_count += 1
+        if self.collision_side != "NONE":
+            if self.collision_side == "UP":
+                if dx >= 0:
+                    self.x += self.vel
+                else:
+                    self.x -= self.vel
+            elif self.collision_side == "DOWN":
+                if dx >= 0:
+                    self.x += self.vel
+                else:
+                    self.x -= self.vel
+            elif self.collision_side == "LEFT":
+                if dy >= 0:
+                    self.y += self.vel
+                else:
+                    self.y -= self.vel
+            elif self.collision_side == "RIGHT":
+                if dy >= 0:
+                    self.y += self.vel
+                else:
+                    self.y -= self.vel
+        else:
+            if dx >= 0 and dy < 0:
+                if abs(dx) > abs(dy):
+                    if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                        self.walk_count = 0
+                    self.direction = "RIGHT"
+                    self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                    self.walk_count += 1
+                else:
+                    if self.direction != "UP" or self.walk_count + 1 >= 27:
+                        self.walk_count = 0
+                    self.direction = "UP"
+                    self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                    self.walk_count += 1
+            elif dx >= 0 and dy > 0:
+                if abs(dx) > abs(dy):
+                    if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                        self.walk_count = 0
+                    self.direction = "RIGHT"
+                    self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                    self.walk_count += 1
+                else:
+                    if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                        self.walk_count = 0
+                    self.direction = "DOWN"
+                    self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                    self.walk_count += 1
+            elif dx <= 0 and dy < 0:
+                if abs(dx) > abs(dy):
+                    if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                        self.walk_count = 0
+                    self.direction = "LEFT"
+                    self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                    self.walk_count += 1
+                else:
+                    if self.direction != "UP" or self.walk_count + 1 >= 27:
+                        self.walk_count = 0
+                    self.direction = "UP"
+                    self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                    self.walk_count += 1
+            elif dx <= 0 and dy > 0:
+                if abs(dx) > abs(dy):
+                    if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                        self.walk_count = 0
+                    self.direction = "LEFT"
+                    self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                    self.walk_count += 1
+                else:
+                    if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                        self.walk_count = 0
+                    self.direction = "DOWN"
+                    self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                    self.walk_count += 1
             
         gameDisplay.blit(self.image, (self.x, self.y))
 
@@ -262,7 +295,6 @@ class Enemy(object):
             player.x += dx * 15
             player.y += dy * 15
             player.vulnerable = False
-            print(player.health)
             if player.health <= 0:
                 pygame.quit()
                 quit()
@@ -270,11 +302,14 @@ class Enemy(object):
 class Projectile(object):
     def __init__(self, direction, player):
         super()
+        self.damage = 5
         self.x = player.x
         self.y = player.y
         self.direction = direction
         self.speed = 6
         self.rect = pygame.rect.Rect(self.x, self.y, 20, 20)
+        self.width = 20
+        self.height = 20
 
     def move(self):
         if self.direction == "UP":
@@ -323,36 +358,57 @@ def room():
     gameDisplay.blit(pygame.image.load('./Art/wall_left_end.png'), (((display_height/32)/2 + 1)*tile_size, display_height-tile_size*2))
 
 
+def print_score(count):
+    font = pygame.font.SysFont(None, 25)
+    text = font.render("Score: " + str(count), True, black)
+    gameDisplay.blit(text, (display_width-128, 10))
+
 def game_loop():
 
     
    
     wall_box = wall_boxes()
-    x = (display_width * 0.45)
-    y = (display_height * 0.5)
-    x_change = 0
-    y_change = 0
+    score = 0
 
     exit_game = False
     
     player = Player()
-    
-    obstacle_list = [Obstacle(0),Obstacle(1),Obstacle(2),Obstacle(3),Obstacle(4),Obstacle(5)]
-    
-    
+
+
+    #obstacle1 = Obstacle(0)#makes Obstacle easier to work with
+    #obstacle2 = Obstacle(1)
+    obstacle_list = []
+    for row in range(0, len(obstacle_grid)-1):
+        for col in range(0, len(obstacle_grid[0])-1):
+            if obstacle_grid[row][col] != 1 and random.randint(0,50) == 1:
+                obstacle_list.append(Obstacle(random.randint(0,1), row, col))
+        
     projectiles = []
 
-    bigbad = Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size))
+    enemies = []
+    for index in range(0, 4):
+        enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), 10))
     
     while not exit_game:
+        # spawn new enemy if less than 4
+        if len(enemies) < 4:
+            random_x = random.randint(tile_size,display_width-tile_size-character_size)
+            random_y = random.randint(tile_size*2,display_height-(tile_size*2)-character_size)
+            while random_x - player.x > -50 and random_x - player.x < 50 and random_y - player.y > -50 and random_y - player.y < 50:
+                random_x = random.randint(tile_size,display_width-tile_size-character_size)
+                random_y = random.randint(tile_size*2,display_height-(tile_size*2)-character_size)
+            
+            enemies.append(Enemy(random_x, random_y, 10))
+
         for event in pygame.event.get():  # event handling loop (inputs and shit)
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
 
+        # handle player attack and cooldown
         if not player.can_attack:
             player.attack_clock += 1
-            if player.attack_clock >= 60:
+            if player.attack_clock >= 30:
                 player.attack_clock = 0
                 player.can_attack = True
         else:
@@ -375,30 +431,72 @@ def game_loop():
         
         room()
 
-
-        bigbad.move(player) 
+        # move enemies towards player and blit
+        for enemy in enemies:
+            enemy.move(player) 
+        
         wall_boxes()
         player.move()
         
-        for x in projectiles:
-            x.move()
+
+        # iterate through projectile list: moving and checking for collision with objects and enemies
+        projectiles_length = len(projectiles)
+        projectile_index = 0
+        while projectile_index < projectiles_length:
+            projectile = projectiles[projectile_index]
+            projectile.move()
+            enemy_index = 0
+            enemies_length = len(enemies)
+            while enemy_index < enemies_length:
+                enemy = enemies[enemy_index]
+                if collision(enemy, projectile):
+                    enemy.health -= projectile.damage
+                    projectiles.remove(projectile)
+                    projectiles_length -= 1
+                    projectile_index -= 1
+                    if enemy.health <= 0:
+                        enemies.remove(enemy)
+                        score += 1
+                    break
+                enemy_index += 1
+            for obstacle in obstacle_list:
+                if collision(projectile, obstacle):
+                    projectiles.remove(projectile)
+                    projectiles_length -= 1
+                    projectile_index -= 1
+                    break
+            if pygame.Rect.collidelist(projectile.rect,wall_box) != -1:
+                projectiles.remove(projectile)
+                projectiles_length -= 1
+                projectile_index -= 1
+            projectile_index += 1
+
+        print_score(score)
             
-        for index in range(0,6):
-            obstacle_list[index].draw()
-            collision(player,obstacle_list[index])
-            collision(bigbad,obstacle_list[index])
+        # player and enemy collision with obstacles
+        for obstacle in obstacle_list:
+            obstacle.draw()
+            collision(player,obstacle)
+            for enemy in enemies:    
+                collision(enemy,obstacle)
+            
 
         #pygame.draw.rect(gameDisplay,green,player.rect)
         #pygame.draw.rect(gameDisplay,red,obstacle.rect)
 
         if pygame.Rect.collidelist(player.rect,wall_box) != -1 and player.direction == "LEFT":
             player.x = 32 
-        if pygame.Rect.collidelist(player.rect,wall_box) != -1 and player.direction == "RIGHT":
-            player.x = (display_width - (32+player.image_width ))
-        if pygame.Rect.collidelist(player.rect,wall_box) != -1  and player.direction == "UP":
+        elif pygame.Rect.collidelist(player.rect,wall_box) != -1 and player.direction == "RIGHT":
+            player.x = (display_width - (32+player.width ))
+        elif pygame.Rect.collidelist(player.rect,wall_box) != -1  and player.direction == "UP":
             player.y = 48
-        if pygame.Rect.collidelist(player.rect,wall_box) != -1  and player.direction == "DOWN":
-            player.y = display_height - (64 + player.image_height)
+        elif pygame.Rect.collidelist(player.rect,wall_box) != -1  and player.direction == "DOWN":
+            player.y = display_height - (64 + player.height)
+
+        for i in range(0, player.health):
+            gameDisplay.blit(pygame.image.load("./Art/heart.png"), (i*20 + 10, 5))
+        
+        ### Draw scenery then enemies here ###
 
         if not player.vulnerable:
             player.vulnerability_clock += 1
@@ -406,15 +504,8 @@ def game_loop():
                 player.vulnerability_clock = 0
                 player.vulnerable = True
 
-        
-
-
-        
-        ### Draw scenery then enemies here ###
-        #player(x, y)
-
         pygame.display.update() #also can use pygame.display.flip(), update allows a parameter to specifically update
-        clock.tick(120) #sets frames per second
+        clock.tick(180) #sets frames per second
 
 
 game_loop()
@@ -427,6 +518,7 @@ quit() #end program
 ############################
 #TODO: Solidify collision with objects and walls------DONE
 #TODO: Enemies walk towards player------DONE
-#TODO: Enemy Sprites and animation
+#TODO: Enemy Sprites and animation-------DONE
 #TODO: Enemy damage player when collision boxes touch-----DONE
 #TODO: Create system for placing multiple objects around the room
+#TODO: Make is so when player stops moving resets animation to both legs down
