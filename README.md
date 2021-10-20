@@ -32,7 +32,7 @@ Matt Shiber
 
     If you do not have pip installed with your version of python, you can use any of the ways listed [here](https://pip.pypa.io/en/stable/installation/#ensurepip) to install pip on your device.
 
-3. Now that you have the dependencies downloaded, all you have to do is clone our [repository](https://github.com/scs128/CSCHacks2021) and run ```Rogue.py``` in the terminal.
+3. Now that you have the dependencies downloaded, all you have to do is clone our [repository](https://github.com/scs128/Case-of-Mondays) and run ```Rogue.py``` in the terminal.
 
 ### Gameplay
 
