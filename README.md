@@ -34,7 +34,11 @@ Matt Shiber
 
 3. Now that you have the dependencies downloaded, all you have to do is clone our [repository](https://github.com/scs128/CSCHacks2021) and run ```Rogue.py``` in the terminal.
 
+### Known Bugs
+* Zombie collision with objects in the room is very iffy, sometimes teleporting to other sides of the object. We are currently working on this.
+* Sometimes when player is hit by a zombie near a wall the character will teleport across the room. Also currently working to fix this since they come from the same logic we used for collision at first.
+* Zombies do not collide with eachother, this isn't a bug we just have not implemented collision between zombies yet.
+
 ## Feedback
 
 If you have demo'd the current state of our game and have any feedback on what we've done, suggestions on what we could do, or something you think would be cool, we'd love to hear it! You can leave all feedback and suggestions [in this google form](https://forms.gle/ZvYj9mZQgRrRbkNv7), and we greatly appreciate you taking the time to play our game and responding!
-
