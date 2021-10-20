@@ -26,11 +26,11 @@ Matt Shiber
 
 ### How to Demo Our Game
 
-1. First, you'll want to start by downloading a version of python 3.7.7 or greater. These can be found [Here](https://www.python.org/downloads/). If you already have python download you can check your version by using ```python --version``` in the terminal.
+1. First, you'll want to start by downloading a version of python 3.7.7 or greater. These can be found [here](https://www.python.org/downloads/). If you already have python download you can check your version by using ```python --version``` in the terminal.
 
 2. Next, your going to want to download pygame, a library for creating games in python. This can be done using python's built in package installer: pip. Just run the command ```python3 -m pip install -U pygame --user``` in the terminal to download it. You can test if its download by running an included example like so, ```python3 -m pygame.examples.aliens```. 
 
-    If you do not have pip installed with your version of python, you can use any of the ways listed [Here](https://pip.pypa.io/en/stable/installation/#ensurepip) to install pip on your device.
+    If you do not have pip installed with your version of python, you can use any of the ways listed [here](https://pip.pypa.io/en/stable/installation/#ensurepip) to install pip on your device.
 
 3. Now that you have the dependencies downloaded, all you have to do is clone our [repository](https://github.com/scs128/CSCHacks2021) and run ```Rogue.py``` in the terminal.
 
