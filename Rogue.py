@@ -4,7 +4,6 @@ from pygame import sprite
 from pygame import image
 from pygame.sprite import collide_mask, collide_rect, collide_rect_ratio
 import math
-#blah blah blah
 
 pygame.init()
 
@@ -27,11 +26,7 @@ obstacle_grid = [[0 for i in range(int(display_width/32-2))] for j in range(int(
 
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #set up frame for game
 pygame.display.set_caption('Rogue-Like') #change title on the game window
-clock = pygame.time.Clock() #pygame clock based off frames apparently
-
-#playerImg = pygame.image.load('baldGuy.png') #load player image
-
-    
+clock = pygame.time.Clock() #pygame clock based off frames apparently    
 
 class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading and spawning
 
@@ -52,7 +47,6 @@ class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading a
 
         for i in range(0, int(self.height/32)):
             for j in range(0, 0+int(self.width/32)):
-                print("row: " + str(i+row) + "\tcol: " + str(j+col))
                 obstacle_grid[i+row][j+col] = 1
         
     def draw(self):
@@ -302,7 +296,6 @@ class Enemy(object):
             player.x += dx * 15
             player.y += dy * 15
             player.vulnerable = False
-            print(player.health)
             if player.health <= 0:
                 pygame.quit()
                 quit()
@@ -390,9 +383,7 @@ def game_loop():
         for col in range(0, len(obstacle_grid[0])-1):
             if obstacle_grid[row][col] != 1 and random.randint(0,50) == 1:
                 obstacle_list.append(Obstacle(random.randint(0,1), row, col))
-    
-    print(obstacle_grid)
-    
+        
     projectiles = []
 
     enemies = []
