@@ -24,6 +24,11 @@ player_speed = 3 # number of pixels player moves per action
 
 obstacle_grid = [[0 for i in range(int(display_width/32-2))] for j in range(int(display_height/32-4))]
 
+
+enemies = []
+projectiles = []
+obstacle_list = []
+
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #set up frame for game
 pygame.display.set_caption('Rogue-Like') #change title on the game window
 clock = pygame.time.Clock() #pygame clock based off frames apparently    
@@ -48,6 +53,8 @@ class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading a
         for i in range(0, int(self.height/32)):
             for j in range(0, 0+int(self.width/32)):
                 obstacle_grid[i+row][j+col] = 1
+
+        self.draw()
         
     def draw(self):
         gameDisplay.blit(self.image, (self.x, self.y,))#this is currently bliting barrel probably a better way to do this
@@ -165,19 +172,31 @@ class Player(pygame.sprite.Sprite):
             self.y -= self.speed_y
             self.image = pygame.image.load(self.walk_up[self.walk_count//9])
             self.walk_count += 1
+        else:
+            self.walk_count = 0
+            if self.direction == "UP":
+                self.image = pygame.image.load(self.walk_up[0])
+            elif self.direction == "DOWN":
+                self.image = pygame.image.load(self.walk_down[0])
+            elif self.direction == "RIGHT":
+                self.image = pygame.image.load(self.walk_right[0])
+            elif self.direction == "LEFT":
+                self.image = pygame.image.load(self.walk_left[0])
 
-        gameDisplay.blit(self.image, (self.x, self.y))
-
-
+        self.draw()
         self.rect.topleft = (self.x, self.y)
         #pygame.draw.rect(gameDisplay, black, self.rect)
-            
+
+    def draw(self):
+        gameDisplay.blit(self.image, (self.x, self.y))
         
     def update(self):
         pass
 
     def attack(self):
         pass
+
+player = Player()
 
 
 class Enemy(object):
@@ -284,9 +303,7 @@ class Enemy(object):
                     self.direction = "DOWN"
                     self.image = pygame.image.load(self.walk_down[self.walk_count//9])
                     self.walk_count += 1
-            
-        gameDisplay.blit(self.image, (self.x, self.y))
-
+        self.draw()
 
         self.rect.topleft = (self.x, self.y)
 
@@ -299,6 +316,10 @@ class Enemy(object):
             if player.health <= 0:
                 pygame.quit()
                 quit()
+
+    def draw(self):
+        gameDisplay.blit(self.image, (self.x, self.y))
+
 
 class Projectile(object):
     def __init__(self, direction, player):
@@ -323,8 +344,10 @@ class Projectile(object):
             self.x += self.speed
         #gameDisplay.blit()
         self.rect.topleft = (self.x, self.y)
-        pygame.draw.rect(gameDisplay, black, self.rect)
+        self.draw()
 
+    def draw(self):
+        pygame.draw.rect(gameDisplay, black, self.rect)
  
 def room():
     #if display_width == 320 and display_height == 320:
@@ -358,11 +381,55 @@ def room():
     gameDisplay.blit(pygame.image.load('./Art/wall_right_end.png'), (((display_height/32)/2 - 2)*tile_size, display_height-tile_size*2))
     gameDisplay.blit(pygame.image.load('./Art/wall_left_end.png'), (((display_height/32)/2 + 1)*tile_size, display_height-tile_size*2))
 
+def draw_things():
+    room()
+    for obstacle in obstacle_list:
+        obstacle.draw()
+    for enemy in enemies:
+        enemy.draw()
+    for projectile in projectiles:
+        projectile.draw()
+    player.draw()
 
 def print_score(count):
     font = pygame.font.SysFont(None, 25)
     text = font.render("Score: " + str(count), True, black)
     gameDisplay.blit(text, (display_width-128, 10))
+
+def open_shop():
+    image = pygame.image.load('./Art/tree.png')
+    gameDisplay.blit(image, (300, 300))
+    pygame.display.update()
+    while True:
+        for event in pygame.event.get():  # event handling loop (inputs and shit)
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return -1
+                if event.key == pygame.K_p:
+                    return 0
+
+
+def pause_game(): 
+    image = pygame.image.load('./Art/Pause_menu.png')
+    gameDisplay.blit(image, (0, 0))
+    pygame.display.update()
+    while True:
+        draw_things()
+        gameDisplay.blit(image, (0, 0))
+        pygame.display.update()
+        for event in pygame.event.get():  # event handling loop (inputs and shit)
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+                if event.key == pygame.K_p:
+                    if open_shop() == -1:
+                        return
 
 def game_loop():
 
@@ -373,20 +440,17 @@ def game_loop():
 
     exit_game = False
     
-    player = Player()
+    #player = Player()
 
 
     #obstacle1 = Obstacle(0)#makes Obstacle easier to work with
     #obstacle2 = Obstacle(1)
-    obstacle_list = []
     for row in range(0, len(obstacle_grid)-1):
         for col in range(0, len(obstacle_grid[0])-1):
             if obstacle_grid[row][col] != 1 and random.randint(0,50) == 1:
                 obstacle_list.append(Obstacle(random.randint(0,1), row, col))
         
-    projectiles = []
 
-    enemies = []
     for index in range(0, 4):
         enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), 10))
     
@@ -405,6 +469,8 @@ def game_loop():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                pause_game()
 
         # handle player attack and cooldown
         if not player.can_attack:
