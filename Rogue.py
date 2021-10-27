@@ -18,12 +18,14 @@ red = (255, 0, 0)
 green = (0, 255, 0)
 blue = (0, 0, 255)
 
+first = True
+
 tile_size = 32 # pixel size per tile
 character_size = 32
 
 player_speed = 3 # number of pixels player moves per action
 
-obstacle_grid = [[0 for i in range(int(display_width/32-2))] for j in range(int(display_height/32-4))]
+obstacle_grid = [[0 for i in range(int(display_height/32-2))] for j in range(int(display_width/32-4))]
 
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #set up frame for game
 pygame.display.set_caption('Rogue-Like') #change title on the game window
@@ -50,6 +52,7 @@ class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading a
         self.rect.topleft = (self.x,self.y)
         self.rect.inflate(-5,-5)
 
+        obstacle_grid[row][col] = 1
         for i in range(0, int(self.height/32)):
             for j in range(0, 0+int(self.width/32)):
                 obstacle_grid[i+row][j+col] = 1
@@ -202,7 +205,10 @@ class Enemy(object):
         self.health = health
         self.width = self.image.get_width()
         self.height = self.image.get_height()
-        self.collision_side = "NONE"
+        self.collision_down = False
+        self.collision_up = False
+        self.collision_left = False
+        self.collision_right = False
 
     def move(self, player):
         # Find direction vector (dx, dy) between enemy and player.
@@ -210,98 +216,255 @@ class Enemy(object):
         dist = math.hypot(dx, dy)
         dx, dy = dx / dist, dy / dist  # Normalize.
         # Move along this normalized vector towards the player at current speed.
-        current_col = self.x//32
-        current_row = self.y//32
-        next_col = int((self.x + dx * self.vel)//32)
-        next_row = int((self.y + dy * self.vel)//32)
-        self.damage(player, dx, dy)
 
-        print("current row: " + str(current_row) + "\current col: " + str(current_col))
-        print("next row: " + str(next_row) + "\tnext col: " + str(next_col))
-        print(str(obstacle_grid[next_row][next_col]))
-        print(obstacle_grid)
-        self.walkCount = 0
-        if next_col < 0 or next_row < 0 or next_col > len(obstacle_grid[0])-1 or next_row > len(obstacle_grid)-1 or obstacle_grid[next_row][next_col] == 1:
-            if current_row > next_row:
-                if dx >= 0:
-                    self.x += self.vel
-                else:
-                    self.x -= self.vel
-            elif current_row < next_row:
-                if dx >= 0:
-                    self.x += self.vel
-                else:
-                    self.x -= self.vel
-            elif current_col > next_col:
-                if dy >= 0:
-                    self.y += self.vel
-                else:
-                    self.y -= self.vel
-            elif current_col < next_col:
-                if dy >= 0:
-                    self.y += self.vel
-                else:
-                    self.y -= self.vel
-        else:
-            self.x += dx * self.vel
-            self.y += dy * self.vel
-            if dx >= 0 and dy < 0:
-                if abs(dx) > abs(dy):
-                    if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
-                        self.walk_count = 0
-                    self.direction = "RIGHT"
-                    self.image = pygame.image.load(self.walk_right[self.walk_count//9])
-                    self.walk_count += 1
-                else:
-                    if self.direction != "UP" or self.walk_count + 1 >= 27:
-                        self.walk_count = 0
-                    self.direction = "UP"
-                    self.image = pygame.image.load(self.walk_up[self.walk_count//9])
-                    self.walk_count += 1
-            elif dx >= 0 and dy > 0:
-                if abs(dx) > abs(dy):
-                    if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
-                        self.walk_count = 0
-                    self.direction = "RIGHT"
-                    self.image = pygame.image.load(self.walk_right[self.walk_count//9])
-                    self.walk_count += 1
-                else:
-                    if self.direction != "DOWN" or self.walk_count + 1 >= 27:
-                        self.walk_count = 0
-                    self.direction = "DOWN"
-                    self.image = pygame.image.load(self.walk_down[self.walk_count//9])
-                    self.walk_count += 1
-            elif dx <= 0 and dy < 0:
-                if abs(dx) > abs(dy):
-                    if self.direction != "LEFT" or self.walk_count + 1 >= 27:
-                        self.walk_count = 0
-                    self.direction = "LEFT"
-                    self.image = pygame.image.load(self.walk_left[self.walk_count//9])
-                    self.walk_count += 1
-                else:
-                    if self.direction != "UP" or self.walk_count + 1 >= 27:
-                        self.walk_count = 0
-                    self.direction = "UP"
-                    self.image = pygame.image.load(self.walk_up[self.walk_count//9])
-                    self.walk_count += 1
-            elif dx <= 0 and dy > 0:
-                if abs(dx) > abs(dy):
-                    if self.direction != "LEFT" or self.walk_count + 1 >= 27:
-                        self.walk_count = 0
-                    self.direction = "LEFT"
-                    self.image = pygame.image.load(self.walk_left[self.walk_count//9])
-                    self.walk_count += 1
-                else:
-                    if self.direction != "DOWN" or self.walk_count + 1 >= 27:
-                        self.walk_count = 0
-                    self.direction = "DOWN"
-                    self.image = pygame.image.load(self.walk_down[self.walk_count//9])
-                    self.walk_count += 1
+        if dx <= 0 and dy <= 0:
+            print("moving upleft")
+            #topleft, topmiddle, topright, leftmiddle, bottomleft
+            # if topleft/topmiddle/topright enter new row; then collison_up
+            # if topleft/leftmiddle/bottomleft enter new col; then collision_left
+            top = self.rect.top
+            left = self.rect.left
+            current_col = int(left//32)-1
+            current_row = int(top//32)-2
+            next_col = int((left + dx*self.vel)//32)-1
+            next_row = int((top + dy*self.vel)//32)-2
             
+            top = self.rect.top
+            right = self.rect.right
+            left = self.rect.left
+            bottom = self.rect.bottom
+            current_right_col = int(right//32)-1
+            current_left_col = int(left//32)-1
+            current_top_row = int(top//32)-2
+            current_bottom_row = int(bottom//32)-2
+            next_col = int((right + dx*self.vel)//32)-1
+            next_row = int((top + dy*self.vel)//32)-2
+            print(str(obstacle_grid[next_row][next_col]))
+            if next_row != current_top_row and next_col != current_left_col:
+                if obstacle_grid[next_row][next_col] == 1: # upper right
+                    print("I'm checking for other ways to move")
+                    if obstacle_grid[next_row][current_left_col] != 1:
+                        self.y -= self.vel
+                    elif obstacle_grid[current_top_row][next_col] != 1:
+                        self.x += self.vel
+                    else:
+                        print("I got here")
+                elif obstacle_grid[next_row][current_left_col] == 1 and obstacle_grid[current_top_row][next_col] == 1:
+                    print("Im stuck bb")
+                elif obstacle_grid[next_row][current_right_col] == 1 or obstacle_grid[next_row][current_left_col] == 1:
+                    self.x += self.vel
+                elif obstacle_grid[current_top_row][next_col] == 1 or obstacle_grid[current_bottom_row][next_col] == 1:
+                    self.y -= self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            elif next_row != current_top_row:
+                if obstacle_grid[next_row][current_right_col] == 1 or obstacle_grid[next_row][current_left_col] == 1:
+                    self.x += self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            elif next_col != current_left_col:
+                if obstacle_grid[current_top_row][next_col] == 1 or obstacle_grid[current_bottom_row][next_col] == 1:
+                    self.y -= self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            else:
+                self.normal_move(dx, dy)  
+        elif dx <= 0 and dy >= 0:
+            print("moving down left")
+            #topleft, leftmiddle, bottomleft, bottommiddle, bottomright
+            # if topleft/leftmiddle/bottomleft enter new col; then collision_left
+            # if bottomleft/bottommiddle/bottomright enter new row; then collison_up\
+            top = self.rect.top
+            right = self.rect.right
+            left = self.rect.left
+            bottom = self.rect.bottom
+            current_right_col = int(right//32)-1
+            current_left_col = int(left//32)-1
+            current_top_row = int(top//32)-2
+            current_bottom_row = int(bottom//32)-2
+            next_col = int((right + dx*self.vel)//32)-1
+            next_row = int((top + dy*self.vel)//32)-2
+            print(str(obstacle_grid[next_row][next_col]))
+            if next_row != current_bottom_row and next_col != current_left_col:
+                if obstacle_grid[next_row][next_col] == 1: # upper right
+                    print("I'm checking for other ways to move")
+                    if obstacle_grid[next_row][current_left_col] != 1:
+                        self.y -= self.vel
+                    elif obstacle_grid[current_bottom_row][next_col] != 1:
+                        self.x += self.vel
+                    else:
+                        print("I got here")
+                elif obstacle_grid[next_row][current_left_col] == 1 and obstacle_grid[current_bottom_row][next_col] == 1:
+                    print("Im stuck bb")
+                elif obstacle_grid[next_row][current_right_col] == 1 or obstacle_grid[next_row][current_left_col] == 1:
+                    self.x += self.vel
+                elif obstacle_grid[current_top_row][next_col] == 1 or obstacle_grid[current_bottom_row][next_col] == 1:
+                    self.y -= self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            elif next_row != current_bottom_row:
+                if obstacle_grid[next_row][current_right_col] == 1 or obstacle_grid[next_row][current_left_col] == 1:
+                    self.x += self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            elif next_col != current_left_col:
+                if obstacle_grid[current_top_row][next_col] == 1 or obstacle_grid[current_bottom_row][next_col] == 1:
+                    self.y -= self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            else:
+                self.normal_move(dx, dy)  
+        elif dx >= 0 and dy <= 0:
+            print("moving top right")
+            #topleft, topmiddle, topright, rightmiddle, bottomright
+            # if topleft/topmiddle/topright enter new row; then collison_up
+            # if topright/rightmiddle/bottomright enter new col; then collision_right
+            top = self.rect.top
+            right = self.rect.right
+            left = self.rect.left
+            bottom = self.rect.bottom
+            current_right_col = int(right//32)-1
+            current_left_col = int(left//32)-1
+            current_top_row = int(top//32)-2
+            current_bottom_row = int(bottom//32)-2
+            next_col = int((right + dx*self.vel)//32)-1
+            next_row = int((top + dy*self.vel)//32)-2
+            print(str(obstacle_grid[next_row][next_col]))
+            if next_row != current_top_row and next_col != current_right_col:
+                if obstacle_grid[next_row][next_col] == 1: # upper right
+                    print("I'm checking for other ways to move")
+                    if obstacle_grid[next_row][current_right_col] != 1:
+                        self.y -= self.vel
+                    elif obstacle_grid[current_top_row][next_col] != 1:
+                        self.x += self.vel
+                    else:
+                        print("I got here")
+                elif obstacle_grid[next_row][current_right_col] == 1 and obstacle_grid[current_top_row][next_col] == 1:
+                    print("Im stuck bb")
+                elif obstacle_grid[next_row][current_right_col] == 1 or obstacle_grid[next_row][current_left_col] == 1:
+                    self.x += self.vel
+                elif obstacle_grid[current_top_row][next_col] == 1 or obstacle_grid[current_bottom_row][next_col] == 1:
+                    self.y -= self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            elif next_row != current_top_row:
+                if obstacle_grid[next_row][current_right_col] == 1 or obstacle_grid[next_row][current_left_col] == 1:
+                    self.x += self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            elif next_col != current_right_col:
+                if obstacle_grid[current_top_row][next_col] == 1 or obstacle_grid[current_bottom_row][next_col] == 1:
+                    self.y -= self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            else:
+                self.normal_move(dx, dy)  
+        elif dx >= 0 and dy >= 0:
+            print("moving down right")
+            #topright, rightmiddle, bottomright, bottommiddle, bottomleft
+            # if bottomleft/bottommiddle/bottomright enter new row; then collison_up
+            # if topright/rightmiddle/bottomright enter new col; then collision_right
+            top = self.rect.top
+            right = self.rect.right
+            left = self.rect.left
+            bottom = self.rect.bottom
+            current_right_col = int(right//32)-1
+            current_left_col = int(left//32)-1
+            current_top_row = int(top//32)-2
+            current_bottom_row = int(bottom//32)-2
+            next_col = int((right + dx*self.vel)//32)-1
+            next_row = int((bottom + dy*self.vel)//32)-2
+            print(str(obstacle_grid[next_row][next_col]))
+            if next_row != current_bottom_row and next_col != current_right_col:
+                if obstacle_grid[next_row][next_col] == 1: # upper right
+                    print("I'm checking for other ways to move")
+                    if obstacle_grid[next_row][current_right_col] != 1:
+                        self.y += self.vel
+                    elif obstacle_grid[current_bottom_row][next_col] != 1:
+                        self.x += self.vel
+                    else:
+                        print("I got here")
+                elif obstacle_grid[next_row][current_right_col] == 1 and obstacle_grid[current_bottom_row][next_col] == 1:
+                    print("Im stuck bb")
+                elif obstacle_grid[next_row][current_right_col] == 1 or obstacle_grid[next_row][current_left_col] == 1:
+                    self.x += self.vel
+                elif obstacle_grid[current_top_row][next_col] == 1 or obstacle_grid[current_bottom_row][next_col] == 1:
+                    self.y += self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            elif next_row != current_bottom_row:
+                if obstacle_grid[next_row][current_right_col] == 1 or obstacle_grid[next_row][current_left_col] == 1:
+                    self.x += self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            elif next_col != current_right_col:
+                if obstacle_grid[current_top_row][next_col] == 1 or obstacle_grid[current_bottom_row][next_col] == 1:
+                    self.y += self.vel
+                else:
+                    self.normal_move(dx, dy)  
+            else:
+                self.normal_move(dx, dy)
+        
+        self.damage(player, dx, dy)
         gameDisplay.blit(self.image, (self.x, self.y))
-
-
         self.rect.topleft = (self.x, self.y)
+
+    def normal_move(self, dx, dy):
+        self.walkCount = 0
+        self.x += dx * self.vel
+        self.y += dy * self.vel
+        if dx >= 0 and dy < 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "RIGHT"
+                self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "UP" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "UP"
+                self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                self.walk_count += 1
+        elif dx >= 0 and dy > 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "RIGHT"
+                self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "DOWN"
+                self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                self.walk_count += 1
+        elif dx <= 0 and dy < 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "LEFT"
+                self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "UP" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "UP"
+                self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                self.walk_count += 1
+        elif dx <= 0 and dy > 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "LEFT"
+                self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "DOWN"
+                self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                self.walk_count += 1
 
     def damage(self, player, dx, dy):
         if collide_rect (self, player) and player.vulnerable:
@@ -377,7 +540,7 @@ def print_score(count):
     text = font.render("Score: " + str(count), True, black)
     gameDisplay.blit(text, (display_width-128, 10))
 
-def game_loop():
+def game_loop(first):
 
     
    
@@ -397,17 +560,20 @@ def game_loop():
             if obstacle_grid[row][col] != 1 and random.randint(0,50) == 1:
                 obstacle_list.append(Obstacle(random.randint(0,1), row, col))
     
-    print(obstacle_grid)
+    if first:
+        print(obstacle_grid)
+        first = False
+    #print(obstacle_grid)
     
     projectiles = []
 
     enemies = []
-    for index in range(0, 4):
+    for index in range(0, 1):
         enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), 10))
     
     while not exit_game:
         # spawn new enemy if less than 4
-        if len(enemies) < 4:
+        if len(enemies) < 0:
             random_x = random.randint(tile_size,display_width-tile_size-character_size)
             random_y = random.randint(tile_size*2,display_height-(tile_size*2)-character_size)
             while random_x - player.x > -50 and random_x - player.x < 50 and random_y - player.y > -50 and random_y - player.y < 50:
@@ -524,7 +690,7 @@ def game_loop():
         clock.tick(180) #sets frames per second
 
 
-game_loop()
+game_loop(first)
 pygame.quit() #stop pygame from running
 quit() #end program
 
