@@ -329,9 +329,17 @@ class Projectile(object):
         self.y = player.y
         self.direction = direction
         self.speed = 6
-        self.rect = pygame.rect.Rect(self.x, self.y, 20, 20)
         self.width = 20
         self.height = 20
+        if self.direction == "UP":
+            self.image = pygame.image.load("./Art/bullet_up.png")
+        if self.direction == "DOWN":
+            self.image = pygame.image.load("./Art/bullet_down.png")
+        if self.direction == "LEFT":
+            self.image = pygame.image.load("./Art/bullet_left.png")
+        if self.direction == "RIGHT":
+            self.image = pygame.image.load("./Art/bullet_right.png")
+        self.rect = self.image.get_rect()
 
     def move(self):
         if self.direction == "UP":
@@ -347,7 +355,8 @@ class Projectile(object):
         self.draw()
 
     def draw(self):
-        pygame.draw.rect(gameDisplay, black, self.rect)
+        gameDisplay.blit(self.image, (self.x, self.y))
+        #pygame.draw.rect(gameDisplay, black, self.rect)
  
 def room():
     #if display_width == 320 and display_height == 320:
