@@ -1,11 +1,20 @@
+import os
 import pygame
 import random
 from pygame import sprite
 from pygame import image
+from pygame import mixer
 from pygame.sprite import collide_mask, collide_rect, collide_rect_ratio
 import math
 
+
+
+os.getcwd()
 pygame.init()
+pygame.mixer.init()
+pygame.mixer.pre_init(44100,16,2,512)
+
+
 
 # must be an even multiple of 32
 display_width = 640
@@ -22,11 +31,13 @@ character_size = 32
 
 player_speed = 3 # number of pixels player moves per action
 
-obstacle_grid = [[0 for i in range(int(display_width/32-2))] for j in range(int(display_height/32-4))]
+obstacle_grid = [[0 for i in range(int(display_width/32-2))] for j in range(int(display_height/32-2))]
+#going to expirement reset to: obstacle_grid = [[0 for i in range(int(display_width/32-2))] for j in range(int(display_height/32-4))]
 
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #set up frame for game
 pygame.display.set_caption('Rogue-Like') #change title on the game window
-clock = pygame.time.Clock() #pygame clock based off frames apparently    
+clock = pygame.time.Clock() #pygame clock based off frames apparently  
+
 
 class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading and spawning
 
@@ -44,7 +55,7 @@ class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading a
         self.height =  self.image.get_height()#if ~8 pixels are subtracted can be used to make depth but then have to figure out redraw so you dont slid under other sprites
         self.rect = self.image.get_rect()# creates a rectangle and may not be strictly necessary if using collide_mask
         self.rect.topleft = (self.x,self.y)
-        self.rect.inflate(-5,-5)
+        self.rect.inflate(-10,-10)
 
         for i in range(0, int(self.height/32)):
             for j in range(0, 0+int(self.width/32)):
@@ -96,7 +107,6 @@ def collision(character, obstacle):
             character.y = obstacle.rect.top - (character.height)
             return True
    
-
 #obstacle_group = pygame.sprite.Group()        
 
 class Player(pygame.sprite.Sprite):
@@ -127,7 +137,6 @@ class Player(pygame.sprite.Sprite):
 
     def move(self):
         pressed_keys = pygame.key.get_pressed()
-
         if pressed_keys[pygame.K_a]:
             if self.speed_x == 0 and self.direction != "LEFT": #makes it so you can move right away from obstacle applies to all of the things 
                 self.speed_x = 3
@@ -166,6 +175,7 @@ class Player(pygame.sprite.Sprite):
             self.walk_count += 1
 
         gameDisplay.blit(self.image, (self.x, self.y))
+        
 
 
         self.rect.topleft = (self.x, self.y)
@@ -190,7 +200,7 @@ class Enemy(object):
         self.image = pygame.image.load('./Art/BigBad_Down.png')
         # self.path = [x, end]  # This will define where our enemy starts and finishes their path.
         self.walk_count = 0
-        self.vel = 1
+        self.vel = 2
         self.rect = self.image.get_rect()
         self.direction = "UP"
         self.health = health
@@ -365,8 +375,15 @@ def print_score(count):
 
 def game_loop():
 
-    
-   
+
+    pygame.mixer.music.load("./Sound/Box Jump.wav")
+    pygame.mixer.music.set_volume(.5)
+    pygame.mixer.music.play(-1)
+    hit_enemy = pygame.mixer.Sound("./Sound/hit-enemy.wav")
+    enemy_die = pygame.mixer.Sound("./Sound/explode1.wav")
+    player_hit = pygame.mixer.Sound('./Sound/hit-4.wav')
+    shoot = pygame.mixer.Sound("./Sound/laser-7.wav")
+
     wall_box = wall_boxes()
     score = 0
 
@@ -374,16 +391,19 @@ def game_loop():
     
     player = Player()
 
-
+    
+            
     #obstacle1 = Obstacle(0)#makes Obstacle easier to work with
     #obstacle2 = Obstacle(1)
     obstacle_list = []
     for row in range(0, len(obstacle_grid)-1):
         for col in range(0, len(obstacle_grid[0])-1):
             if obstacle_grid[row][col] != 1 and random.randint(0,50) == 1:
-                obstacle_list.append(Obstacle(random.randint(0,1), row, col))
+                obstacle_list.append(Obstacle(random.randint(0,6), row, col))
         
     projectiles = []
+    
+
 
     enemies = []
     for index in range(0, 4):
@@ -391,6 +411,8 @@ def game_loop():
     
     while not exit_game:
         # spawn new enemy if less than 4
+        
+            
         if len(enemies) < 4:
             random_x = random.randint(tile_size,display_width-tile_size-character_size)
             random_y = random.randint(tile_size*2,display_height-(tile_size*2)-character_size)
@@ -414,15 +436,19 @@ def game_loop():
         else:
             pressed_keys = pygame.key.get_pressed()
             if pressed_keys[pygame.K_UP]:
+                shoot.play()
                 projectiles.append(Projectile("UP", player))
                 player.can_attack = False
             elif pressed_keys[pygame.K_DOWN]:
+                shoot.play()
                 projectiles.append(Projectile("DOWN", player))
                 player.can_attack = False
             elif pressed_keys[pygame.K_LEFT]:
+                shoot.play()
                 projectiles.append(Projectile("LEFT", player))
                 player.can_attack = False
             elif pressed_keys[pygame.K_RIGHT]:
+                shoot.play()
                 projectiles.append(Projectile("RIGHT", player))
                 player.can_attack = False
 
@@ -439,6 +465,7 @@ def game_loop():
         player.move()
         
 
+
         # iterate through projectile list: moving and checking for collision with objects and enemies
         projectiles_length = len(projectiles)
         projectile_index = 0
@@ -454,7 +481,9 @@ def game_loop():
                     projectiles.remove(projectile)
                     projectiles_length -= 1
                     projectile_index -= 1
+                    hit_enemy.play()
                     if enemy.health <= 0:
+                        enemy_die.play()
                         enemies.remove(enemy)
                         score += 1
                     break
@@ -506,6 +535,10 @@ def game_loop():
 
         pygame.display.update() #also can use pygame.display.flip(), update allows a parameter to specifically update
         clock.tick(180) #sets frames per second
+    
+    
+        
+
 
 
 game_loop()
