@@ -285,92 +285,91 @@ class Enemy(object):
 
     def move(self, player,boss):
         if not self.dead:
-            if boss == False:
-                # Find direction vector (dx, dy) between enemy and player.
-                dx, dy = player.x - self.x, player.y - self.y
-                dist = math.hypot(dx, dy)
-                dx, dy = dx / dist, dy / dist  # Normalize.
-                # Move along this normalized vector towards the player at current speed.
-                self.x += dx * self.speed
-                self.y += dy * self.speed
-                if self.damage(player, dx, dy):
-                    return True
+            # Find direction vector (dx, dy) between enemy and player.
+            dx, dy = player.x - self.x, player.y - self.y
+            dist = math.hypot(dx, dy)
+            dx, dy = dx / dist, dy / dist  # Normalize.
+            # Move along this normalized vector towards the player at current speed.
+            self.x += dx * self.speed
+            self.y += dy * self.speed
+            if self.damage(player, dx, dy):
+                return True
 
-                self.walkCount = 0
-                if self.collision_side != "NONE":
-                    if self.collision_side == "UP":
-                        if dx >= 0:
-                            self.x += self.speed
-                        else:
-                            self.x -= self.speed
-                    elif self.collision_side == "DOWN":
-                        if dx >= 0:
-                            self.x += self.speed
-                        else:
-                            self.x -= self.speed
-                    elif self.collision_side == "LEFT":
-                        if dy >= 0:
-                            self.y += self.speed
-                        else:
-                            self.y -= self.speed
-                    elif self.collision_side == "RIGHT":
-                        if dy >= 0:
-                            self.y += self.speed
-                        else:
-                            self.y -= self.speed
-                else:
-                    if dx >= 0 and dy < 0:
-                        if abs(dx) > abs(dy):
-                            if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
-                                self.walk_count = 0
-                            self.direction = "RIGHT"
-                            self.image = pygame.image.load(self.walk_right[self.walk_count//9])
-                            self.walk_count += 1
-                        else:
-                            if self.direction != "UP" or self.walk_count + 1 >= 27:
-                                self.walk_count = 0
-                            self.direction = "UP"
-                            self.image = pygame.image.load(self.walk_up[self.walk_count//9])
-                            self.walk_count += 1
-                    elif dx >= 0 and dy > 0:
-                        if abs(dx) > abs(dy):
-                            if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
-                                self.walk_count = 0
-                            self.direction = "RIGHT"
-                            self.image = pygame.image.load(self.walk_right[self.walk_count//9])
-                            self.walk_count += 1
-                        else:
-                            if self.direction != "DOWN" or self.walk_count + 1 >= 27:
-                                self.walk_count = 0
-                            self.direction = "DOWN"
-                            self.image = pygame.image.load(self.walk_down[self.walk_count//9])
-                            self.walk_count += 1
-                    elif dx <= 0 and dy < 0:
-                        if abs(dx) > abs(dy):
-                            if self.direction != "LEFT" or self.walk_count + 1 >= 27:
-                                self.walk_count = 0
-                            self.direction = "LEFT"
-                            self.image = pygame.image.load(self.walk_left[self.walk_count//9])
-                            self.walk_count += 1
-                        else:
-                            if self.direction != "UP" or self.walk_count + 1 >= 27:
-                                self.walk_count = 0
-                            self.direction = "UP"
-                            self.image = pygame.image.load(self.walk_up[self.walk_count//9])
-                            self.walk_count += 1
-                    elif dx <= 0 and dy > 0:
-                        if abs(dx) > abs(dy):
-                            if self.direction != "LEFT" or self.walk_count + 1 >= 27:
-                                self.walk_count = 0
-                            self.direction = "LEFT"
-                            self.image = pygame.image.load(self.walk_left[self.walk_count//9])
-                            self.walk_count += 1
-                        else:
-                            if self.direction != "DOWN" or self.walk_count + 1 >= 27:
-                                self.walk_count = 0
-                            self.direction = "DOWN"
-                            self.image = pygame.image.load(self.walk_down[self.walk_count//9])
-                            self.walk_count += 1
+            self.walkCount = 0
+            if self.collision_side != "NONE":
+                if self.collision_side == "UP":
+                    if dx >= 0:
+                        self.x += self.speed
+                    else:
+                        self.x -= self.speed
+                elif self.collision_side == "DOWN":
+                    if dx >= 0:
+                        self.x += self.speed
+                    else:
+                        self.x -= self.speed
+                elif self.collision_side == "LEFT":
+                    if dy >= 0:
+                        self.y += self.speed
+                    else:
+                        self.y -= self.speed
+                elif self.collision_side == "RIGHT":
+                    if dy >= 0:
+                        self.y += self.speed
+                    else:
+                        self.y -= self.speed
+            else:
+                if dx >= 0 and dy < 0:
+                    if abs(dx) > abs(dy):
+                        if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                            self.walk_count = 0
+                        self.direction = "RIGHT"
+                        self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                        self.walk_count += 1
+                    else:
+                        if self.direction != "UP" or self.walk_count + 1 >= 27:
+                            self.walk_count = 0
+                        self.direction = "UP"
+                        self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                        self.walk_count += 1
+                elif dx >= 0 and dy > 0:
+                    if abs(dx) > abs(dy):
+                        if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                            self.walk_count = 0
+                        self.direction = "RIGHT"
+                        self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                        self.walk_count += 1
+                    else:
+                        if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                            self.walk_count = 0
+                        self.direction = "DOWN"
+                        self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                        self.walk_count += 1
+                elif dx <= 0 and dy < 0:
+                    if abs(dx) > abs(dy):
+                        if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                            self.walk_count = 0
+                        self.direction = "LEFT"
+                        self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                        self.walk_count += 1
+                    else:
+                        if self.direction != "UP" or self.walk_count + 1 >= 27:
+                            self.walk_count = 0
+                        self.direction = "UP"
+                        self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                        self.walk_count += 1
+                elif dx <= 0 and dy > 0:
+                    if abs(dx) > abs(dy):
+                        if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                            self.walk_count = 0
+                        self.direction = "LEFT"
+                        self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                        self.walk_count += 1
+                    else:
+                        if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                            self.walk_count = 0
+                        self.direction = "DOWN"
+                        self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                        self.walk_count += 1
         self.draw()
 
         self.rect.topleft = (self.x, self.y)
