@@ -7,6 +7,8 @@ import math
 
 pygame.init()
 
+pygame.init()
+
 # must be an even multiple of 32
 display_width = 640
 display_height = 640
@@ -52,6 +54,8 @@ obstacle_list = []
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #set up frame for game
 pygame.display.set_caption('Rogue-Like') #change title on the game window
 clock = pygame.time.Clock() #pygame clock based off frames apparently    
+
+
 
 class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading and spawning
 
@@ -233,19 +237,30 @@ player = Player()
 
 
 class Enemy(object):
-    walk_up = ["./Art/BigBad_Up.png", "./Art/BigBad_Up_Left.png", "./Art/BigBad_Up_Right.png"]
-    walk_right = ["./Art/BigBad_Right.png", "./Art/BigBad_Right_Left.png", "./Art/BigBad_Right_Right.png"]
-    walk_left = ["./Art/BigBad_Left.png", "./Art/BigBad_Left_Left.png", "./Art/BigBad_Left_Right.png"]
-    walk_down = ["./Art/BigBad_Down.png", "./Art/BigBad_Down_Left.png", "./Art/BigBad_Down_Right.png"]
-    dead_zombies = ["./Art/BigBad_Dead.png"]
+    normal_up = ["./Art/BigBad_Up.png", "./Art/BigBad_Up_Left.png", "./Art/BigBad_Up_Right.png"]
+    normal_right = ["./Art/BigBad_Right.png", "./Art/BigBad_Right_Left.png", "./Art/BigBad_Right_Right.png"]
+    normal_left = ["./Art/BigBad_Left.png", "./Art/BigBad_Left_Left.png", "./Art/BigBad_Left_Right.png"]
+    normal_down = ["./Art/BigBad_Down.png", "./Art/BigBad_Down_Left.png", "./Art/BigBad_Down_Right.png"]
+    dead_normal = ["./Art/BigBad_Dead.png"]
 
-    def __init__(self, x, y, health):
+    boss_up = ["./Art/Boss_Up.png", "./Art/Boss_Up_Left.png", "./Art/Boss_Up_Right.png"]
+    boss_right = ["./Art/Boss_Right.png", "./Art/Boss_Right_Left.png", "./Art/Boss_Right_Right.png"]
+    boss_left = ["./Art/Boss_Left.png", "./Art/Boss_Left_Left.png", "./Art/Boss_Left_Right.png"]
+    boss_down = ["./Art/Boss_Down.png", "./Art/Boss_Down_Left.png", "./Art/Boss_Down_Right.png"]
+    dead_boss = ["./Art/dead_boss.png"]
+
+    walk_up = []
+    walk_right = []
+    walk_left = []
+    walk_down = []
+    dead_zombie = []
+
+    def __init__(self, x, y, health, speed, boss):
         self.x= x
         self.y = y
         self.image = pygame.image.load('./Art/BigBad_Down.png')
-        # self.path = [x, end]  # This will define where our enemy starts and finishes their path.
         self.walk_count = 0
-        self.speed = 1
+        self.speed = speed
         self.rect = self.image.get_rect()
         self.direction = "UP"
         self.health = health
@@ -253,8 +268,22 @@ class Enemy(object):
         self.height = self.image.get_height()
         self.collision_side = "NONE"
         self.dead = False
+        if boss:
+            print("boss")
+            self.walk_up = self.boss_up
+            self.walk_right = self.boss_right
+            self.walk_left = self.boss_left
+            self.walk_down = self.boss_down
+            self.dead_zombie = self.dead_boss
+        else:
+            self.walk_up = self.normal_up
+            self.walk_right = self.normal_right
+            self.walk_left = self.normal_left
+            self.walk_down = self.normal_down
+            self.dead_zombie = self.dead_normal
 
-    def move(self, player):
+
+    def move(self, player,boss):
         if not self.dead:
             # Find direction vector (dx, dy) between enemy and player.
             dx, dy = player.x - self.x, player.y - self.y
@@ -420,7 +449,7 @@ class Enemy(object):
 
     def draw(self):
         if self.dead:
-            self.image = pygame.image.load(self.dead_zombies[0])
+            self.image = pygame.image.load(self.dead_zombie[0])
             self.walk_count += 1
             if self.walk_count >= 60:
                 return True
@@ -606,7 +635,7 @@ def spawn_enemy(health):
     while random_x - player.x > -50 and random_x - player.x < 50 and random_y - player.y > -50 and random_y - player.y < 50:
         random_x = random.randint(tile_size,display_width-tile_size-character_size)
         random_y = random.randint(tile_size*2,display_height-(tile_size*2)-character_size)
-    enemies.append(Enemy(random_x, random_y, health))
+    enemies.append(Enemy(random_x, random_y, health,1,False))
 
 def game_loop(level):
 
@@ -632,8 +661,9 @@ def game_loop(level):
     enemy_health = levels[level][1]
     print(str(levels[level][0]))
     for index in range(0, levels[level][0]):
-        enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), enemy_health))
-    
+        enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), enemy_health,1,False))
+    if levels[level][3]:
+        enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), enemy_health * 5,2.5,True))
     zombie_count = (levels[level][2]-1)*levels[level][0]
     while not exit_game:
         # spawn new enemy if less than level wave count
@@ -675,6 +705,27 @@ def game_loop(level):
                 projectiles.append(Projectile("RIGHT", player))
                 player.can_attack = False
 
+        # handle player attack and cooldown
+        if not player.can_attack:
+            player.attack_clock += 1
+            if player.attack_clock >= 30:
+                player.attack_clock = 0
+                player.can_attack = True
+        else:
+            pressed_keys = pygame.key.get_pressed()
+            if pressed_keys[pygame.K_UP]:
+                projectiles.append(Projectile("UP", player))
+                player.can_attack = False
+            elif pressed_keys[pygame.K_DOWN]:
+                projectiles.append(Projectile("DOWN", player))
+                player.can_attack = False
+            elif pressed_keys[pygame.K_LEFT]:
+                projectiles.append(Projectile("LEFT", player))
+                player.can_attack = False
+            elif pressed_keys[pygame.K_RIGHT]:
+                projectiles.append(Projectile("RIGHT", player))
+                player.can_attack = False
+
         gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
         ### Draw scenery then enemies here ###
         
@@ -692,7 +743,7 @@ def game_loop(level):
 
         # move enemies towards player and blit
         for enemy in enemies:
-            if enemy.move(player):
+            if enemy.move(player,False):
                 return False
         
         wall_boxes()
