@@ -276,7 +276,6 @@ class Enemy(object):
         self.collision_side = "NONE"
         self.dead = False
         if boss:
-            print("boss")
             self.walk_up = self.boss_up
             self.walk_right = self.boss_right
             self.walk_left = self.boss_left
@@ -603,7 +602,6 @@ def open_shop():
                     return 0
 
                 global points
-                print(str(points))
                 if event.key == pygame.K_g:
                     #increase damage
                     global projectile_damage
@@ -617,7 +615,6 @@ def open_shop():
                     if points >= 5 and fire_rate > 10:
                         fire_rate -= 5
                         points -= 5
-                print(str(points))
 
 
 def pause_game():
@@ -677,7 +674,6 @@ def game_loop(level):
                         obstacle_count += 1
         
     enemy_health = levels[level][1]
-    print(str(levels[level][0]))
     for index in range(0, levels[level][0]):
         enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), enemy_health,1,False))
     if levels[level][3]:
@@ -691,7 +687,6 @@ def game_loop(level):
             
 
         if zombie_count <= 0 and len(enemies) <= 0:
-            print("finished level")
             return True
 
         for event in pygame.event.get():  # event handling loop (inputs and shit)
@@ -728,9 +723,10 @@ def game_loop(level):
                 player.can_attack = False
 
         # handle player attack and cooldown
+        
         if not player.can_attack:
             player.attack_clock += 1
-            if player.attack_clock >= 30:
+            if player.attack_clock >= fire_rate:
                 player.attack_clock = 0
                 player.can_attack = True
         else:
@@ -910,10 +906,10 @@ def main_menu():
                 elif event.key == pygame.K_RIGHT:
                     projectiles.append(Projectile("RIGHT", player))
                     player.can_attack = False
-
+        global fire_rate
         if not player.can_attack:
             player.attack_clock += 1
-            if player.attack_clock >= 30:
+            if player.attack_clock >= fire_rate:
                 player.attack_clock = 0
                 player.can_attack = True
         
