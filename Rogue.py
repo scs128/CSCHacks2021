@@ -24,6 +24,8 @@ global high_score
 high_score = 0
 global score
 score = 0
+global points
+points = 0
 
 black = (0, 0, 0)
 white = (255, 255, 255)
@@ -41,8 +43,14 @@ character_size = 32
 
 player_speed = 3 # number of pixels player moves per action
 
-obstacle_grid = [[0 for i in range(int(display_width/32-2))] for j in range(int(display_height/32-2))]
-#going to expirement reset to: obstacle_grid = [[0 for i in range(int(display_width/32-2))] for j in range(int(display_height/32-4))]
+obstacle_grid = [[0 for i in range(int(display_height/32-2))] for j in range(int(display_width/32-4))]
+
+global projectile_damage
+projectile_damage = 2
+global projectile_speed
+projectile_speed = 6
+global fire_rate
+fire_rate = 50
 
 
 enemies = []
@@ -72,6 +80,7 @@ class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading a
         self.rect.topleft = (self.x,self.y)
         self.rect.inflate(-10,-10)
 
+        obstacle_grid[row][col] = 1
         for i in range(0, int(self.height/32)):
             for j in range(0, 0+int(self.width/32)):
                 obstacle_grid[i+row][j+col] = 1
@@ -344,6 +353,63 @@ class Enemy(object):
         self.rect.topleft = (self.x, self.y)
         return False
 
+    def normal_move(self, dx, dy):
+        self.walkCount = 0
+        self.x += dx * self.vel
+        self.y += dy * self.vel
+        if dx >= 0 and dy < 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "RIGHT"
+                self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "UP" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "UP"
+                self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                self.walk_count += 1
+        elif dx >= 0 and dy > 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "RIGHT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "RIGHT"
+                self.image = pygame.image.load(self.walk_right[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "DOWN"
+                self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                self.walk_count += 1
+        elif dx <= 0 and dy < 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "LEFT"
+                self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "UP" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "UP"
+                self.image = pygame.image.load(self.walk_up[self.walk_count//9])
+                self.walk_count += 1
+        elif dx <= 0 and dy > 0:
+            if abs(dx) > abs(dy):
+                if self.direction != "LEFT" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "LEFT"
+                self.image = pygame.image.load(self.walk_left[self.walk_count//9])
+                self.walk_count += 1
+            else:
+                if self.direction != "DOWN" or self.walk_count + 1 >= 27:
+                    self.walk_count = 0
+                self.direction = "DOWN"
+                self.image = pygame.image.load(self.walk_down[self.walk_count//9])
+                self.walk_count += 1
+
     def damage(self, player, dx, dy):
         if collide_rect (self, player) and player.vulnerable:
             pygame.mixer.Sound("./Sound/hit-3.wav").play()
@@ -376,11 +442,11 @@ class Enemy(object):
 class Projectile(object):
     def __init__(self, direction, player):
         super()
-        self.damage = 5
+        self.damage = projectile_damage
         self.x = player.x
         self.y = player.y
         self.direction = direction
-        self.speed = 6
+        self.speed = projectile_speed
         if self.direction == "UP":
             self.image = pygame.image.load("./Art/bullet_up.png")
         if self.direction == "DOWN":
@@ -446,11 +512,16 @@ def draw_things():
     room()
     for obstacle in obstacle_list:
         obstacle.draw()
+    for dead_enemy in dead_enemies:
+        dead_enemy.draw()
     for enemy in enemies:
         enemy.draw()
     for projectile in projectiles:
         projectile.draw()
     player.draw()
+    for i in range(0, player.health):
+        gameDisplay.blit(pygame.image.load("./Art/heart.png"), (i*20 + 10, 5))
+    print_level()
 
 def print_score(highscore):
     global high_score
@@ -470,15 +541,28 @@ def print_level():
     text = font.render("Level: " + str(current_level+1), True, black)
     gameDisplay.blit(text, (display_width/2 - 20, 10))
 
+def print_points():
+    global points
+    font = pygame.font.SysFont(None, 25)
+    text = font.render("Points: " + str(points), True, blue)
+    gameDisplay.blit(text, (display_width-128, 10))
+
+
 def increment_score():
     global score
     score += 1
+    global points
+    if score % 2 == 0:
+        points += 1
 
 def open_shop():
-    image = pygame.image.load('./Art/tree.png')
-    gameDisplay.blit(image, (300, 300))
-    pygame.display.update()
+    image = pygame.image.load('./Art/shop.png')
     while True:
+        draw_things()
+        print_points()
+        gameDisplay.blit(image, (0, 0))
+        gameDisplay.blit(pygame.image.load('./Art/Pause_menu.png'), (0, 0))
+        pygame.display.update()
         for event in pygame.event.get():  # event handling loop (inputs and shit)
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -489,6 +573,23 @@ def open_shop():
                 if event.key == pygame.K_p:
                     return 0
 
+                global points
+                print(str(points))
+                if event.key == pygame.K_g:
+                    #increase damage
+                    global projectile_damage
+                    if points >= 5 and projectile_damage < 10:
+                        projectile_damage += 1
+                        points -= 5
+                        
+                if event.key == pygame.K_h:
+                    #increase fire rate
+                    global fire_rate
+                    if points >= 5 and fire_rate > 10:
+                        fire_rate -= 5
+                        points -= 5
+                print(str(points))
+
 
 def pause_game():
     pygame.mixer.music.set_volume(.2) 
@@ -497,6 +598,7 @@ def pause_game():
     pygame.display.update()
     while True:
         draw_things()
+        print_points()
         gameDisplay.blit(image, (0, 0))
         pygame.display.update()
         for event in pygame.event.get():  # event handling loop (inputs and shit)
@@ -542,7 +644,7 @@ def game_loop(level):
             for col in range(0, len(obstacle_grid[0])-1):
                 if obstacle_count < 5:
                     if obstacle_grid[row][col] != 1 and random.randint(0,50) == 1:
-                        obstacle_list.append(Obstacle(random.randint(0,1), row, col))
+                        obstacle_list.append(Obstacle(random.randrange(0, 6), row, col))
                         obstacle_count += 1
         
     enemy_health = levels[level][1]
@@ -570,9 +672,10 @@ def game_loop(level):
                 pause_game()
 
         # handle player attack and cooldown
+        global fire_rate
         if not player.can_attack:
             player.attack_clock += 1
-            if player.attack_clock >= 30:
+            if player.attack_clock >= fire_rate:
                 player.attack_clock = 0
                 player.can_attack = True
         else:
@@ -625,6 +728,7 @@ def game_loop(level):
         while projectile_index < projectiles_length:
             projectile = projectiles[projectile_index]
             projectile.move()
+            projectile_removed = False
             enemy_index = 0
             enemies_length = len(enemies)
             while enemy_index < enemies_length:
@@ -635,6 +739,7 @@ def game_loop(level):
                     projectiles_length -= 1
                     projectile_index -= 1
                     hit_enemy.play() 
+                    projectile_removed = True
                     if enemy.health <= 0:
                         enemy_die.play() 
                         enemy.dead = True
@@ -643,18 +748,19 @@ def game_loop(level):
                         increment_score()
                     break
                 enemy_index += 1
-            for obstacle in obstacle_list:
-                if collide_rect(projectile, obstacle):
-                    shoot_obstacle.play()
+            if not projectile_removed:
+                for obstacle in obstacle_list:
+                    if collide_rect(projectile, obstacle):
+                        projectiles.remove(projectile)
+                        projectiles_length -= 1
+                        projectile_index -= 1
+                        projectile_removed = True
+                        break
+            if not projectile_removed:
+                if pygame.Rect.collidelist(projectile.rect,wall_box) != -1:
                     projectiles.remove(projectile)
                     projectiles_length -= 1
                     projectile_index -= 1
-                    break
-            if pygame.Rect.collidelist(projectile.rect,wall_box) != -1:
-                shoot_obstacle.play()
-                projectiles.remove(projectile)
-                projectiles_length -= 1
-                projectile_index -= 1
             projectile_index += 1
 
         print_score(False)
@@ -698,6 +804,33 @@ def game_loop(level):
 
         pygame.display.update() #also can use pygame.display.flip(), update allows a parameter to specifically update
         clock.tick(180) #sets frames per second
+
+def credits():
+    texts = ["./Art/Credits/title.png", "./Art/Credits/andy_fiore.png", "./Art/Credits/scott_creation.png", "./Art/Credits/matt_shiber.png","./Art/Credits/silveira_neto.png", "./Art/Credits/nicolae_berbece.png", "./Art/Credits/scott_sullivan.png", "./Art/Credits/evan_miller.png", "./Art/Credits/abstraction.png"]
+    player.x = 400
+    player.y = 400
+    timer = 0
+    while True:
+        if timer//120 >= len(texts):
+            return
+        image = pygame.image.load(texts[timer//120])
+        for event in pygame.event.get():  # event handling loop (inputs and shit)
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+
+        gameDisplay.fill(black)
+        gameDisplay.blit(image, (0, 0))
+        gameDisplay.blit(pygame.image.load("./Art/curtain.png"), (0, 0))
+        pygame.display.update()
+        timer += 1
+        clock.tick(180)
+
+        
+
         
 
 def main_menu():
@@ -732,8 +865,9 @@ def main_menu():
             if player.attack_clock >= 30:
                 player.attack_clock = 0
                 player.can_attack = True
+        
+        
 
-        gameDisplay.blit(pygame.image.load("./Art/title_screen.png"), (0, 0))
 
         print_score(True)
 
@@ -742,21 +876,41 @@ def main_menu():
         right_image = pygame.image.load("./Art/building_right.png")
         building_right = Building(right_image, (160 + building_top.width - right_image.get_width()), (192 + building_top.height))
 
-        load_zone = pygame.Rect((160+building_left.width), (190+building_top.height), building_left.width, (building_left.height+2))
-        pygame.draw.rect(gameDisplay,black,load_zone)
+        game_zone = pygame.Rect((160+building_left.width), (190+building_top.height), building_left.width, (building_left.height+2))
+
+        hall_top = Building(pygame.image.load("./Art/hall_top.png"), 400, 232)
+        hall_left = Building(pygame.image.load("./Art/hall_left.png"), 400, (232 + hall_top.height))
+        right_image = pygame.image.load("./Art/hall_right.png")
+        hall_right = Building(right_image, (400 + hall_top.width - right_image.get_width()), (232 + hall_top.height))
+
+        score_zone = pygame.Rect((398+hall_left.width), (230+hall_top.height), hall_left.width, (hall_left.height + 2))
+
+        gameDisplay.blit(pygame.image.load("./Art/title_screen.png"), (0, 0))
+
+        pygame.draw.rect(gameDisplay,black,score_zone)
+        if score_zone.colliderect(player.rect):
+            credits()
+        pygame.draw.rect(gameDisplay,black,game_zone)
 
         building_top.draw()
         building_left.draw()
         building_right.draw()
 
+        hall_top.draw()
+        hall_left.draw()
+        hall_right.draw()
+
         player.move()
         collision(player, building_top)
         collision(player, building_left)
         collision(player, building_right)
+        collision(player, hall_top)
+        collision(player, hall_left)
+        collision(player, hall_right)
         
-        if load_zone.colliderect(player.rect):
+            
+        if game_zone.colliderect(player.rect):
             pygame.mixer.music.load('./Sound/Box Jump.wav')
-            pygame.mixer.music.set_volume(1)
             pygame.mixer.music.play(-1)
             return True
 
