@@ -54,7 +54,6 @@ gameDisplay = pygame.display.set_mode((display_width, display_height)) #set up f
 pygame.display.set_caption('Rogue-Like') #change title on the game window
 clock = pygame.time.Clock() #pygame clock based off frames apparently  
 
-
 class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading and spawning
 
     obstacle_list = ['./Art/barrel.png','./Art/table_no_cloth.png','./Art/table_cloth.png','./Art/potted_plant.png'
@@ -347,11 +346,15 @@ class Enemy(object):
 
     def damage(self, player, dx, dy):
         if collide_rect (self, player) and player.vulnerable:
+            pygame.mixer.Sound("./Sound/hit-3.wav").play()
             player.health -= 1
             player.x += dx * 15
             player.y += dy * 15
             player.vulnerable = False
             if player.health <= 0:
+                pygame.mixer.music.pause()
+                pygame.mixer.Sound("./Sound/lose-7.wav").play()
+                pygame.time.delay(2000)
                 global score
                 global high_score
                 if score > high_score:
@@ -487,7 +490,8 @@ def open_shop():
                     return 0
 
 
-def pause_game(): 
+def pause_game():
+    pygame.mixer.music.set_volume(.2) 
     image = pygame.image.load('./Art/Pause_menu.png')
     gameDisplay.blit(image, (0, 0))
     pygame.display.update()
@@ -501,6 +505,7 @@ def pause_game():
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    pygame.mixer.music.set_volume(1)
                     return
                 if event.key == pygame.K_p:
                     if open_shop() == -1:
@@ -516,13 +521,9 @@ def spawn_enemy(health):
 
 def game_loop(level):
 
-
-    pygame.mixer.music.load("./Sound/Box Jump.wav")
-    pygame.mixer.music.set_volume(.5)
-    pygame.mixer.music.play(-1)
-    hit_enemy = pygame.mixer.Sound("./Sound/hit-enemy.wav")
-    enemy_die = pygame.mixer.Sound("./Sound/explode1.wav")
-    player_hit = pygame.mixer.Sound('./Sound/hit-4.wav')
+    shoot_obstacle = pygame.mixer.Sound('./Sound/footstep1.wav')
+    hit_enemy = pygame.mixer.Sound("./Sound/hit-1.wav")
+    enemy_die = pygame.mixer.Sound("./Sound/explode-1.wav")
     shoot = pygame.mixer.Sound("./Sound/laser-7.wav")
 
     wall_box = wall_boxes()
@@ -633,9 +634,9 @@ def game_loop(level):
                     projectiles.remove(projectile)
                     projectiles_length -= 1
                     projectile_index -= 1
-                    hit_enemy.play()
+                    hit_enemy.play() 
                     if enemy.health <= 0:
-                        enemy_die.play()
+                        enemy_die.play() 
                         enemy.dead = True
                         dead_enemies.append(enemy)
                         enemies.remove(enemy)
@@ -644,11 +645,13 @@ def game_loop(level):
                 enemy_index += 1
             for obstacle in obstacle_list:
                 if collide_rect(projectile, obstacle):
+                    shoot_obstacle.play()
                     projectiles.remove(projectile)
                     projectiles_length -= 1
                     projectile_index -= 1
                     break
             if pygame.Rect.collidelist(projectile.rect,wall_box) != -1:
+                shoot_obstacle.play()
                 projectiles.remove(projectile)
                 projectiles_length -= 1
                 projectile_index -= 1
@@ -698,6 +701,8 @@ def game_loop(level):
         
 
 def main_menu():
+    pygame.mixer.music.load('./Sound/Sanctuary.wav')
+    pygame.mixer.music.play(-1)
     player.health = 3
     enemies.clear()
     obstacle_list.clear()
@@ -750,6 +755,9 @@ def main_menu():
         collision(player, building_right)
         
         if load_zone.colliderect(player.rect):
+            pygame.mixer.music.load('./Sound/Box Jump.wav')
+            pygame.mixer.music.set_volume(1)
+            pygame.mixer.music.play(-1)
             return True
 
 
