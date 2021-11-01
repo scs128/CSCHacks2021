@@ -86,7 +86,11 @@ class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading a
 
         obstacle_grid[row][col] = 1
         for i in range(0, int(self.height/32)):
+            if i >= len(obstacle_grid):
+                break
             for j in range(0, 0+int(self.width/32)):
+                if j >= len(obstacle_grid[i]):
+                    break
                 obstacle_grid[i+row][j+col] = 1
 
         self.draw()
