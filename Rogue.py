@@ -1,11 +1,20 @@
+import os
 import pygame
 import random
 from pygame import sprite
 from pygame import image
+from pygame import mixer
 from pygame.sprite import collide_mask, collide_rect, collide_rect_ratio
 import math
 
+
+
+os.getcwd()
 pygame.init()
+pygame.mixer.init()
+pygame.mixer.pre_init(44100,16,2,512)
+
+
 
 pygame.init()
 
@@ -53,7 +62,7 @@ obstacle_list = []
 
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #set up frame for game
 pygame.display.set_caption('Rogue-Like') #change title on the game window
-clock = pygame.time.Clock() #pygame clock based off frames apparently    
+clock = pygame.time.Clock() #pygame clock based off frames apparently  
 
 
 
@@ -73,7 +82,7 @@ class Obstacle(pygame.sprite.Sprite):#creates a class of obstacles for loading a
         self.height =  self.image.get_height()#if ~8 pixels are subtracted can be used to make depth but then have to figure out redraw so you dont slid under other sprites
         self.rect = self.image.get_rect()# creates a rectangle and may not be strictly necessary if using collide_mask
         self.rect.topleft = (self.x,self.y)
-        self.rect.inflate(-5,-5)
+        self.rect.inflate(-10,-10)
 
         obstacle_grid[row][col] = 1
         for i in range(0, int(self.height/32)):
@@ -142,7 +151,6 @@ def collision(character, obstacle):
             character.y = obstacle.rect.top - (character.height)
             return True
    
-
 #obstacle_group = pygame.sprite.Group()        
 
 class Player(pygame.sprite.Sprite):
@@ -172,7 +180,6 @@ class Player(pygame.sprite.Sprite):
 
     def move(self):
         pressed_keys = pygame.key.get_pressed()
-
         if pressed_keys[pygame.K_a]:
             if self.speed == 0 and self.direction != "LEFT": #makes it so you can move right away from obstacle applies to all of the things 
                 self.speed = 3
@@ -269,7 +276,6 @@ class Enemy(object):
         self.collision_side = "NONE"
         self.dead = False
         if boss:
-            print("boss")
             self.walk_up = self.boss_up
             self.walk_right = self.boss_right
             self.walk_left = self.boss_left
@@ -434,11 +440,15 @@ class Enemy(object):
 
     def damage(self, player, dx, dy):
         if collide_rect (self, player) and player.vulnerable:
+            pygame.mixer.Sound("./Sound/hit-3.wav").play()
             player.health -= 1
             player.x += dx * 15
             player.y += dy * 15
             player.vulnerable = False
             if player.health <= 0:
+                pygame.mixer.music.pause()
+                pygame.mixer.Sound("./Sound/lose-7.wav").play()
+                pygame.time.delay(2000)
                 global score
                 global high_score
                 if score > high_score:
@@ -592,7 +602,6 @@ def open_shop():
                     return 0
 
                 global points
-                print(str(points))
                 if event.key == pygame.K_g:
                     #increase damage
                     global projectile_damage
@@ -606,10 +615,10 @@ def open_shop():
                     if points >= 5 and fire_rate > 10:
                         fire_rate -= 5
                         points -= 5
-                print(str(points))
 
 
-def pause_game(): 
+def pause_game():
+    pygame.mixer.music.set_volume(.2) 
     image = pygame.image.load('./Art/Pause_menu.png')
     gameDisplay.blit(image, (0, 0))
     pygame.display.update()
@@ -624,6 +633,7 @@ def pause_game():
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
+                    pygame.mixer.music.set_volume(1)
                     return
                 if event.key == pygame.K_p:
                     if open_shop() == -1:
@@ -639,14 +649,19 @@ def spawn_enemy(health):
 
 def game_loop(level):
 
-   
+    shoot_obstacle = pygame.mixer.Sound('./Sound/footstep1.wav')
+    hit_enemy = pygame.mixer.Sound("./Sound/hit-1.wav")
+    enemy_die = pygame.mixer.Sound("./Sound/explode-1.wav")
+    shoot = pygame.mixer.Sound("./Sound/laser-7.wav")
+
     wall_box = wall_boxes()
 
     exit_game = False
     
     #player = Player()
 
-
+    
+            
     #obstacle1 = Obstacle(0)#makes Obstacle easier to work with
     #obstacle2 = Obstacle(1)
     if level == 0:
@@ -659,7 +674,6 @@ def game_loop(level):
                         obstacle_count += 1
         
     enemy_health = levels[level][1]
-    print(str(levels[level][0]))
     for index in range(0, levels[level][0]):
         enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), enemy_health,1,False))
     if levels[level][3]:
@@ -673,7 +687,6 @@ def game_loop(level):
             
 
         if zombie_count <= 0 and len(enemies) <= 0:
-            print("finished level")
             return True
 
         for event in pygame.event.get():  # event handling loop (inputs and shit)
@@ -693,22 +706,27 @@ def game_loop(level):
         else:
             pressed_keys = pygame.key.get_pressed()
             if pressed_keys[pygame.K_UP]:
+                shoot.play()
                 projectiles.append(Projectile("UP", player))
                 player.can_attack = False
             elif pressed_keys[pygame.K_DOWN]:
+                shoot.play()
                 projectiles.append(Projectile("DOWN", player))
                 player.can_attack = False
             elif pressed_keys[pygame.K_LEFT]:
+                shoot.play()
                 projectiles.append(Projectile("LEFT", player))
                 player.can_attack = False
             elif pressed_keys[pygame.K_RIGHT]:
+                shoot.play()
                 projectiles.append(Projectile("RIGHT", player))
                 player.can_attack = False
 
         # handle player attack and cooldown
+        
         if not player.can_attack:
             player.attack_clock += 1
-            if player.attack_clock >= 30:
+            if player.attack_clock >= fire_rate:
                 player.attack_clock = 0
                 player.can_attack = True
         else:
@@ -750,6 +768,7 @@ def game_loop(level):
         player.move()
         
 
+
         # iterate through projectile list: moving and checking for collision with objects and enemies
         projectiles_length = len(projectiles)
         projectile_index = 0
@@ -766,8 +785,10 @@ def game_loop(level):
                     projectiles.remove(projectile)
                     projectiles_length -= 1
                     projectile_index -= 1
+                    hit_enemy.play() 
                     projectile_removed = True
                     if enemy.health <= 0:
+                        enemy_die.play() 
                         enemy.dead = True
                         dead_enemies.append(enemy)
                         enemies.remove(enemy)
@@ -860,6 +881,8 @@ def credits():
         
 
 def main_menu():
+    pygame.mixer.music.load('./Sound/Sanctuary.wav')
+    pygame.mixer.music.play(-1)
     player.health = 3
     enemies.clear()
     obstacle_list.clear()
@@ -883,10 +906,10 @@ def main_menu():
                 elif event.key == pygame.K_RIGHT:
                     projectiles.append(Projectile("RIGHT", player))
                     player.can_attack = False
-
+        global fire_rate
         if not player.can_attack:
             player.attack_clock += 1
-            if player.attack_clock >= 30:
+            if player.attack_clock >= fire_rate:
                 player.attack_clock = 0
                 player.can_attack = True
         
@@ -932,7 +955,10 @@ def main_menu():
         collision(player, hall_left)
         collision(player, hall_right)
         
+            
         if game_zone.colliderect(player.rect):
+            pygame.mixer.music.load('./Sound/Box Jump.wav')
+            pygame.mixer.music.play(-1)
             return True
 
 
