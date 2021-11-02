@@ -688,7 +688,7 @@ def game_loop(level):
     while not exit_game:
         # spawn new enemy if less than level wave count
         if zombie_count > 0 and len(enemies) < levels[level][0]:
-            spawn_enemy(enemy_health, False)
+            spawn_enemy(enemy_health, 1, False)
             zombie_count -= 1
             
 
