@@ -36,7 +36,7 @@ green = (0, 255, 0)
 blue = (0, 0, 255)
 
 # levels are in tuples (# of enemies at a time, enemy health, # of waves, boolean bossfight)
-levels = [(2, 10, 1, False), (2, 10, 3, False), (4, 10, 2, False), (5, 15, 2, False), (3, 15, 1, True)]
+levels = [(2, 16, 1, False), (2, 16, 3, False), (4, 16, 2, False), (5, 16, 3, False), (5, 20, 2, False), (3, 20, 1, True), (5, 30, 3, False), (6, 25, 2, False), (6, 30, 3, False), (7, 30, 3, False), (0, 60, 0, True)]
 global current_level
 current_level = 0
 
@@ -279,6 +279,7 @@ class Enemy(object):
         self.height = self.image.get_height()
         self.collision_side = "NONE"
         self.dead = False
+        self.boss = boss
         if boss:
             self.walk_up = self.boss_up
             self.walk_right = self.boss_right
@@ -443,11 +444,11 @@ class Enemy(object):
                 self.walk_count += 1
 
     def damage(self, player, dx, dy):
-        if collide_rect (self, player) and player.vulnerable:
+        if collision(self, player) and player.vulnerable:
             pygame.mixer.Sound("./Sound/hit-3.wav").play()
             player.health -= 1
-            player.x += dx * 15
-            player.y += dy * 15
+            #player.x += dx * 15
+            #player.y += dy * 15
             player.vulnerable = False
             if player.health <= 0:
                 pygame.mixer.music.pause()
@@ -641,15 +642,16 @@ def pause_game():
                     return
                 if event.key == pygame.K_p:
                     if open_shop() == -1:
+                        pygame.mixer.music.set_volume(1)
                         return
 
-def spawn_enemy(health):
+def spawn_enemy(health, speed, boss):
     random_x = random.randint(tile_size,display_width-tile_size-character_size)
     random_y = random.randint(tile_size*2,display_height-(tile_size*2)-character_size)
-    while random_x - player.x > -50 and random_x - player.x < 50 and random_y - player.y > -50 and random_y - player.y < 50:
+    while random_x - player.x > -128 and random_x - player.x < 128 and random_y - player.y > -128 and random_y - player.y < 128:
         random_x = random.randint(tile_size,display_width-tile_size-character_size)
         random_y = random.randint(tile_size*2,display_height-(tile_size*2)-character_size)
-    enemies.append(Enemy(random_x, random_y, health,1,False))
+    enemies.append(Enemy(random_x, random_y, health, speed, boss))
 
 def game_loop(level):
 
@@ -679,14 +681,14 @@ def game_loop(level):
         
     enemy_health = levels[level][1]
     for index in range(0, levels[level][0]):
-        enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), enemy_health,1,False))
+        spawn_enemy(enemy_health, 1, False)
     if levels[level][3]:
-        enemies.append(Enemy(random.randint(tile_size,display_width-tile_size-character_size),random.randint(tile_size*2,display_height-(tile_size*2)-character_size), enemy_health * 5,2.5,True))
+        spawn_enemy(enemy_health*5, 2.5, True)
     zombie_count = (levels[level][2]-1)*levels[level][0]
     while not exit_game:
         # spawn new enemy if less than level wave count
         if zombie_count > 0 and len(enemies) < levels[level][0]:
-            spawn_enemy(enemy_health)
+            spawn_enemy(enemy_health, False)
             zombie_count -= 1
             
 
@@ -726,28 +728,6 @@ def game_loop(level):
                 projectiles.append(Projectile("RIGHT", player))
                 player.can_attack = False
 
-        # handle player attack and cooldown
-        
-        if not player.can_attack:
-            player.attack_clock += 1
-            if player.attack_clock >= fire_rate:
-                player.attack_clock = 0
-                player.can_attack = True
-        else:
-            pressed_keys = pygame.key.get_pressed()
-            if pressed_keys[pygame.K_UP]:
-                projectiles.append(Projectile("UP", player))
-                player.can_attack = False
-            elif pressed_keys[pygame.K_DOWN]:
-                projectiles.append(Projectile("DOWN", player))
-                player.can_attack = False
-            elif pressed_keys[pygame.K_LEFT]:
-                projectiles.append(Projectile("LEFT", player))
-                player.can_attack = False
-            elif pressed_keys[pygame.K_RIGHT]:
-                projectiles.append(Projectile("RIGHT", player))
-                player.can_attack = False
-
         gameDisplay.fill(white) # must order this and next line because otherwise fill would fill over the car
         ### Draw scenery then enemies here ###
         
@@ -764,12 +744,20 @@ def game_loop(level):
             dead_enemies_index += 1
 
         # move enemies towards player and blit
+
+        for obstacle in obstacle_list:
+            obstacle.draw()
+            collision(player,obstacle)
+            for enemy in enemies:    
+                collision(enemy,obstacle)
+        
+        player.move()
+        
         for enemy in enemies:
             if enemy.move(player,False):
                 return False
         
         wall_boxes()
-        player.move()
         
 
 
@@ -795,8 +783,12 @@ def game_loop(level):
                         enemy_die.play() 
                         enemy.dead = True
                         dead_enemies.append(enemy)
+                        if enemy.boss:
+                            for i in range(0,5):
+                                increment_score()
+                        else:
+                            increment_score()
                         enemies.remove(enemy)
-                        increment_score()
                     break
                 enemy_index += 1
             if not projectile_removed:
@@ -818,11 +810,6 @@ def game_loop(level):
         print_level()
             
         # player and enemy collision with obstacles
-        for obstacle in obstacle_list:
-            obstacle.draw()
-            collision(player,obstacle)
-            for enemy in enemies:    
-                collision(enemy,obstacle)
 
         for enemy1 in enemies:
             for enemy2 in enemies:
@@ -920,7 +907,6 @@ def main_menu():
         
 
 
-        print_score(True)
 
         building_top = Building(pygame.image.load("./Art/building_top.png"), 160, 192)
         building_left = Building(pygame.image.load("./Art/building_left.png"), 160, (192 + building_top.height))
@@ -952,6 +938,8 @@ def main_menu():
         hall_right.draw()
 
         player.move()
+        gameDisplay.blit(pygame.image.load("./Art/title.png"), (0, 0))
+        print_score(True)
         collision(player, building_top)
         collision(player, building_left)
         collision(player, building_right)

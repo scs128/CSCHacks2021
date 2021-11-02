@@ -18,8 +18,6 @@ Matt Shiber
 * Pitt Statistics, 2023
 * mds168@pitt.edu
 
-## MVP Demo
-
 #### Dependencies
  - [Python](https://www.python.org/) (version 3.7.7 or greater)
  - [Pygame](https://www.pygame.org/wiki/about)
@@ -36,18 +34,21 @@ Matt Shiber
 
 ### Gameplay
 
-Right now your goal is to survive and rack up as many zombie kills as possible. Your current score will be displayed in the top right, and your health will be displayed in the top left. Player movement is locked on the x and y axes, moving with ```WASD``` keys. Attack the zombies by shooting placeholder projectiles in a direction corresponding to each ```arrow key```. Good luck!
+A Case of the Mondays is a zombie level based survival game. From the main menu there will be two buildings, a blue tower and a yellow hut. Enter the blue tower to begin the game, this will start you on the first level. Each zombie kill will increase your score, and every other zombie kill will earn you a point. Points can be redeemed in the shop, found in the pause menu, to increase damage and fire rate of your attacks.
 
 #### Controls
-WASD: Player movement
+WASD: Player Movement
 
 Arrow Keys: Shoot Projectile
 
-### Known Bugs
-* Zombie collision with objects in the room is very iffy, sometimes teleporting to other sides of the object. We are currently working on this.
-* Sometimes when player is hit by a zombie near a wall the character will teleport across the room. Also currently working to fix this since they come from the same logic we used for collision at first.
-* Zombies do not collide with eachother, this isn't a bug we just have not implemented collision between zombies yet.
+Escape: Pause Game
+
+### Credits
+- Silveira Neto, Silveira Neto Blog: http://silveiraneto.net/2011/08/20/getting-openpixels/ https://github.com/silveira/openpixels
+- Nicolae Berbece: https://thoseawesomeguys.com/prompts/
+- Evan Miller: Death Animations
+- Abstraction: http://abstractionmusic.bandcamp.com/ http://www.abstractionmusic.com/
 
 ## Feedback
 
-If you have demo'd the current state of our game and have any feedback on what we've done, suggestions on what we could do, or something you think would be cool, we'd love to hear it! You can leave all feedback and suggestions [in this google form](https://forms.gle/ZvYj9mZQgRrRbkNv7), and we greatly appreciate you taking the time to play our game and responding!
+If you have played the current state of our game and have any feedback on what we've done, suggestions on what we could do, or something you think would be cool, we'd love to hear it! You can leave all feedback and suggestions [in this google form](https://forms.gle/ZvYj9mZQgRrRbkNv7), and we greatly appreciate you taking the time to play our game and responding!
