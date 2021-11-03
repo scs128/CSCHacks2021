@@ -21,7 +21,8 @@ pygame.init()
 # must be an even multiple of 32
 display_width = 640
 display_height = 640
-
+global game_beat
+game_beat = False
 global high_score
 high_score = 0
 global score
@@ -48,11 +49,11 @@ player_speed = 3 # number of pixels player moves per action
 obstacle_grid = [[0 for i in range(int(display_height/32-2))] for j in range(int(display_width/32-4))]
 
 global projectile_damage
-projectile_damage = 2
+projectile_damage = 10
 global projectile_speed
 projectile_speed = 6
 global fire_rate
-fire_rate = 50
+fire_rate = 20
 
 
 enemies = []
@@ -985,9 +986,16 @@ while True:
     if main_menu():
         while game_loop(current_level) and current_level < len(levels)-1:
             current_level += 1
+            if game_beat:
+                i = random.randrange(0, 7)
+                if i != 1:
+                    levels.append((random.randrange(7, 12), random.randrange(7, 12)*5, random.randrange(1, 5), random.randrange(0, 7) == 6))
+                else:
+                    levels.append((0, random.randrange(8, 20)*10, 0, True))
         if current_level >= len(levels)-1:
             high_score = score
             score = 0
+            game_beat = True
         current_level = 0
 #game_loop()
 pygame.quit() #stop pygame from running
