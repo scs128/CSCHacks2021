@@ -38,7 +38,7 @@ blue = (0, 0, 255)
 # levels are in tuples (# of enemies at a time, enemy health, # of waves, boolean bossfight)
 levels = [(2, 16, 1, False), (2, 16, 3, False), (4, 16, 2, False), (5, 16, 3, False), (5, 20, 2, False), (3, 20, 1, True), (5, 30, 3, False), (6, 25, 2, False), (6, 30, 3, False), (7, 30, 3, False), (0, 60, 0, True)]
 global current_level
-current_level = 0
+current_level = 10#CHAnGE BACK TO 0 
 
 tile_size = 32 # pixel size per tile
 character_size = 32
@@ -48,11 +48,11 @@ player_speed = 3 # number of pixels player moves per action
 obstacle_grid = [[0 for i in range(int(display_height/32-2))] for j in range(int(display_width/32-4))]
 
 global projectile_damage
-projectile_damage = 2
+projectile_damage = 50
 global projectile_speed
 projectile_speed = 6
 global fire_rate
-fire_rate = 50
+fire_rate = 20
 
 
 enemies = []
@@ -844,12 +844,16 @@ def game_loop(level):
         clock.tick(180) #sets frames per second
 
 def credits():
+    pygame.mixer.music.load('./Sound/Three Red Hearts.wav')
+    pygame.mixer.music.play(-1)
     texts = ["./Art/Credits/title.png", "./Art/Credits/andy_fiore.png", "./Art/Credits/scott_creation.png", "./Art/Credits/matt_shiber.png","./Art/Credits/silveira_neto.png", "./Art/Credits/nicolae_berbece.png", "./Art/Credits/scott_sullivan.png", "./Art/Credits/evan_miller.png", "./Art/Credits/abstraction.png"]
     player.x = 400
     player.y = 400
     timer = 0
     while True:
         if timer//120 >= len(texts):
+            pygame.mixer.music.load("./Sound/Sanctuary.wav")
+            pygame.mixer.music.play(-1)
             return
         image = pygame.image.load(texts[timer//120])
         for event in pygame.event.get():  # event handling loop (inputs and shit)
@@ -857,6 +861,8 @@ def credits():
                 pygame.quit()
                 quit()
             if event.type == pygame.KEYDOWN:
+                pygame.mixer.music.load("./Sound/Sanctuary.wav")
+                pygame.mixer.music.play(-1)
                 if event.key == pygame.K_ESCAPE:
                     return
 
@@ -985,7 +991,15 @@ while True:
     if main_menu():
         while game_loop(current_level) and current_level < len(levels)-1:
             current_level += 1
-        if current_level >= len(levels)-1:
+        if current_level >= len(levels)-1 and player.health > 0:
+            pygame.mixer.music.stop()
+            pygame.mixer.Sound('./Sound/win-8.wav').play()
+            pygame.time.delay(2000)
+            pygame.mixer.music.load("./Sound/Three Red Hearts.wav")
+            credits()
+            high_score = score
+            score = 0
+        elif current_level >= len(levels)-1:
             high_score = score
             score = 0
         current_level = 0
