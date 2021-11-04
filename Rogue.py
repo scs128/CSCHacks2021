@@ -879,7 +879,6 @@ def credits():
         
 
 def main_menu():
-    print(game_beat)
     pygame.mixer.music.load('./Sound/Sanctuary.wav')
     pygame.mixer.music.play(-1)
     player.health = 3
