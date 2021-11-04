@@ -1,7 +1,7 @@
 # A Case of the Monday's (CSC Hacks)
 
 ## Project Description
-We are working on creating a roguelike-esq game in python utilizing the pygame library. Our game will take place in an office/workplace setting as you fight off droves of zombie co-workers and bosses. Currently just a one room shooter in which you gain points for each zombie you kill, we aim to implement a shop system, randomly generated rooms, bosses, and more in the future.
+A Case of the Mondays is an arcade shoot 'em up game. Your objective is to survive, and climb as many levels as possible. With eleven main levels and an infinite amount of survival levels once you've beaten the main game, you can test your survival prowess. Additionally, as you kill zombies you will earn points which can be spent in the shop, in the pause menu. Enjoy playing our game!
 
 ## Team Information
 Scott Sullivan
